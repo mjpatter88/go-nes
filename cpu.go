@@ -54,8 +54,13 @@ func (c *Cpu) Execute(instructions []uint8) {
 	}
 }
 
+func (c *Cpu) printState() {
+	fmt.Printf("Program Counter: %#x\n", c.ProgramCounter)
+	fmt.Printf("Register A: %#x\n", c.RegA)
+	fmt.Printf("Register X: %#x\n", c.RegX)
+}
+
 func (c *Cpu) updateFlags(result uint8) {
 	c.Status.Zero = (result == 0)
 	c.Status.Negative = ((result & (1 << 7)) != 0)
-
 }
