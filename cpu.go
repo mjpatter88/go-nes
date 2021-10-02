@@ -27,7 +27,7 @@ type Cpu struct {
 	ProgramCounter uint16
 }
 
-func (c *Cpu) execute(instructions []uint8) {
+func (c *Cpu) Execute(instructions []uint8) {
 	for {
 		opcode := instructions[c.ProgramCounter]
 		c.ProgramCounter++
@@ -37,12 +37,10 @@ func (c *Cpu) execute(instructions []uint8) {
 			param := instructions[c.ProgramCounter]
 			c.ProgramCounter++
 			c.RegA = param
-			c.Status.Zero = (c.RegA == 0)
-			c.Status.Negative = ((c.RegA & (1 << 7)) != 0)
+			c.updateFlags(c.RegA)
 		case TAX:
 			c.RegX = c.RegA
-			c.Status.Zero = (c.RegX == 0)
-			c.Status.Negative = ((c.RegX & (1 << 7)) != 0)
+			c.updateFlags(c.RegX)
 		case BRK:
 			c.Status.Break = true
 			return
@@ -50,4 +48,10 @@ func (c *Cpu) execute(instructions []uint8) {
 			panic(fmt.Errorf("unsuppored opcode %#x", opcode))
 		}
 	}
+}
+
+func (c *Cpu) updateFlags(result uint8) {
+	c.Status.Zero = (result == 0)
+	c.Status.Negative = ((result & (1 << 7)) != 0)
+
 }
