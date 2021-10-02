@@ -69,6 +69,45 @@ func TestTAX(t *testing.T) {
 	})
 }
 
+func TestINX(t *testing.T) {
+	t.Run("INX", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegX = 0x3a
+		cpu.Execute([]uint8{INX, BRK})
+
+		AssertRegisterX(t, &cpu, 0x3b)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("Zero flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegX = 0xff
+		cpu.Execute([]uint8{INX, BRK})
+
+		AssertRegisterX(t, &cpu, 0x00)
+		AssertZero(t, &cpu, true)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("Negative flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegX = 0x7f
+		cpu.Execute([]uint8{INX, BRK})
+
+		AssertRegisterX(t, &cpu, 0x80)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, true)
+	})
+}
+
+func TestFiveInstructions(t *testing.T) {
+	cpu := Cpu{}
+	cpu.Execute([]uint8{LDA, 0xc0, TAX, INX, BRK})
+
+	AssertRegisterX(t, &cpu, 0xc1)
+}
+
 func AssertBreak(t *testing.T, cpu *Cpu, status bool) {
 	if cpu.Status.Break != status {
 		t.Errorf("Expected Break status to be %t but was %t", status, cpu.Status.Break)
@@ -92,6 +131,6 @@ func AssertRegisterA(t *testing.T, cpu *Cpu, value uint8) {
 
 func AssertRegisterX(t *testing.T, cpu *Cpu, value uint8) {
 	if cpu.RegX != value {
-		t.Errorf("Expected registerX to be %#x but was %#x", value, cpu.RegA)
+		t.Errorf("Expected registerX to be %#x but was %#x", value, cpu.RegX)
 	}
 }

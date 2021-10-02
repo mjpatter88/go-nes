@@ -7,6 +7,7 @@ const (
 	BRK = 0x00
 	LDA = 0xa9
 	TAX = 0xaa
+	INX = 0xe8
 )
 
 type StatusRegister struct {
@@ -40,6 +41,9 @@ func (c *Cpu) Execute(instructions []uint8) {
 			c.updateFlags(c.RegA)
 		case TAX:
 			c.RegX = c.RegA
+			c.updateFlags(c.RegX)
+		case INX:
+			c.RegX++
 			c.updateFlags(c.RegX)
 		case BRK:
 			c.Status.Break = true
