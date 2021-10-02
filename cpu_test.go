@@ -8,6 +8,7 @@ func TestBRK(t *testing.T) {
 
 	AssertBreak(t, &cpu, true)
 }
+
 func TestLDA(t *testing.T) {
 	t.Run("LDA", func(t *testing.T) {
 		cpu := Cpu{}
@@ -29,8 +30,40 @@ func TestLDA(t *testing.T) {
 
 	t.Run("Negative flag", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.execute([]uint8{LDA, 0xF0, BRK})
-		AssertRegisterA(t, &cpu, 0xF0)
+		cpu.execute([]uint8{LDA, 0xf0, BRK})
+		AssertRegisterA(t, &cpu, 0xf0)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, true)
+	})
+}
+
+func TestTAX(t *testing.T) {
+	t.Run("TAX", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegA = 0x3a
+		cpu.execute([]uint8{TAX, BRK})
+
+		AssertRegisterX(t, &cpu, 0x3a)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("Zero flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegA = 0x00
+		cpu.execute([]uint8{TAX, BRK})
+
+		AssertRegisterX(t, &cpu, 0x00)
+		AssertZero(t, &cpu, true)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("Negative flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegA = 0xf0
+		cpu.execute([]uint8{TAX, BRK})
+
+		AssertRegisterX(t, &cpu, 0xf0)
 		AssertZero(t, &cpu, false)
 		AssertNegative(t, &cpu, true)
 	})
@@ -54,5 +87,11 @@ func AssertNegative(t *testing.T, cpu *Cpu, status bool) {
 func AssertRegisterA(t *testing.T, cpu *Cpu, value uint8) {
 	if cpu.RegA != value {
 		t.Errorf("Expected registerA to be %#x but was %#x", value, cpu.RegA)
+	}
+}
+
+func AssertRegisterX(t *testing.T, cpu *Cpu, value uint8) {
+	if cpu.RegX != value {
+		t.Errorf("Expected registerX to be %#x but was %#x", value, cpu.RegA)
 	}
 }
