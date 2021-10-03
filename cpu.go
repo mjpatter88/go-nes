@@ -76,6 +76,8 @@ func (c *Cpu) load(program []uint8) {
 	c.ProgramCounter = PROG_MEM_ADDRESS
 }
 
+// nes is little endian, but we deal with that when reading roms.
+// index is just a numerical value that we use directly to index into memory.
 func (c *Cpu) readMemory(index uint16) uint8 {
 	return c.memory[index]
 }
