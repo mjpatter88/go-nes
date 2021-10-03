@@ -4,5 +4,5 @@ package main
 func main() {
 	cpu := Cpu{}
 	cpu.Execute([]uint8{0xa9, 0xc0, 0xaa, 0xe8, 0x00})
-	cpu.printState()
+	cpu.PrintState()
 }

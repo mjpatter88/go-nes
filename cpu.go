@@ -10,6 +10,8 @@ const (
 	INX = 0xe8
 )
 
+const PROG_MEM_ADDRESS = 0x8000
+
 type StatusRegister struct {
 	Carry     bool
 	Zero      bool
@@ -26,16 +28,22 @@ type Cpu struct {
 	RegX           uint8
 	Status         StatusRegister
 	ProgramCounter uint16
+	memory         [0xffff]uint8
 }
 
-func (c *Cpu) Execute(instructions []uint8) {
+func (c *Cpu) Execute(program []uint8) {
+	c.load(program)
+	c.run()
+}
+
+func (c *Cpu) run() {
 	for {
-		opcode := instructions[c.ProgramCounter]
+		opcode := c.readMemory(c.ProgramCounter)
 		c.ProgramCounter++
 
 		switch opcode {
 		case LDA:
-			param := instructions[c.ProgramCounter]
+			param := c.readMemory(c.ProgramCounter)
 			c.ProgramCounter++
 			c.RegA = param
 			c.updateFlags(c.RegA)
@@ -54,10 +62,22 @@ func (c *Cpu) Execute(instructions []uint8) {
 	}
 }
 
-func (c *Cpu) printState() {
+func (c *Cpu) PrintState() {
 	fmt.Printf("Program Counter: %#x\n", c.ProgramCounter)
 	fmt.Printf("Register A: %#x\n", c.RegA)
 	fmt.Printf("Register X: %#x\n", c.RegX)
+}
+
+func (c *Cpu) load(program []uint8) {
+	for index, byte := range program {
+		memIndex := PROG_MEM_ADDRESS + index
+		c.memory[memIndex] = byte
+	}
+	c.ProgramCounter = PROG_MEM_ADDRESS
+}
+
+func (c *Cpu) readMemory(index uint16) uint8 {
+	return c.memory[index]
 }
 
 func (c *Cpu) updateFlags(result uint8) {

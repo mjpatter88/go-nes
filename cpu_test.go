@@ -106,6 +106,7 @@ func TestFiveInstructions(t *testing.T) {
 	cpu.Execute([]uint8{LDA, 0xc0, TAX, INX, BRK})
 
 	AssertRegisterX(t, &cpu, 0xc1)
+	AssertProgramCounter(t, &cpu, 0x8005)
 }
 
 func AssertBreak(t *testing.T, cpu *Cpu, status bool) {
@@ -132,5 +133,39 @@ func AssertRegisterA(t *testing.T, cpu *Cpu, value uint8) {
 func AssertRegisterX(t *testing.T, cpu *Cpu, value uint8) {
 	if cpu.RegX != value {
 		t.Errorf("Expected registerX to be %#x but was %#x", value, cpu.RegX)
+	}
+}
+
+func AssertProgramCounter(t *testing.T, cpu *Cpu, value uint16) {
+	if cpu.ProgramCounter != value {
+		t.Errorf("Expected ProgramCounter to be %#x but was %#x", value, cpu.ProgramCounter)
+	}
+}
+
+func TestLoad(t *testing.T) {
+	cpu := Cpu{}
+	programBytes := []uint8{0x01, 0x02, 0x03}
+	cpu.load(programBytes)
+
+	for i := 0; i < 3; i++ {
+		memAddress := 0x8000 + i
+		if cpu.memory[memAddress] != uint8(i+1) {
+			t.Errorf("Expected memory[%#x] to be %#x but was %#x", memAddress, i, cpu.memory[memAddress])
+		}
+	}
+}
+
+func TestReadMemory(t *testing.T) {
+	cpu := Cpu{}
+	memBytes := []uint8{0x01, 0x02, 0x03}
+	for i := 0; i < 3; i++ {
+		cpu.memory[i] = memBytes[i]
+	}
+
+	for i := 0; i < 3; i++ {
+		byte := cpu.readMemory(uint16(i))
+		if byte != uint8(i+1) {
+			t.Errorf("wanted %#x but got %#x", i+1, byte)
+		}
 	}
 }
