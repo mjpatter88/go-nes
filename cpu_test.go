@@ -169,3 +169,18 @@ func TestReadMemory(t *testing.T) {
 		}
 	}
 }
+
+func TestWriteMemory(t *testing.T) {
+	cpu := Cpu{}
+	memBytes := []uint8{0x01, 0x02, 0x03}
+	for i := 0; i < 3; i++ {
+		cpu.writeMemory(uint16(i), memBytes[i])
+	}
+
+	for i := 0; i < 3; i++ {
+		byte := cpu.memory[i]
+		if byte != uint8(i+1) {
+			t.Errorf("wanted %#x but got %#x", i+1, byte)
+		}
+	}
+}

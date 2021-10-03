@@ -82,6 +82,10 @@ func (c *Cpu) readMemory(index uint16) uint8 {
 	return c.memory[index]
 }
 
+func (c *Cpu) writeMemory(index uint16, value uint8) {
+	c.memory[index] = value
+}
+
 func (c *Cpu) updateFlags(result uint8) {
 	c.Status.Zero = (result == 0)
 	c.Status.Negative = ((result & (1 << 7)) != 0)
