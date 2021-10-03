@@ -184,3 +184,31 @@ func TestWriteMemory(t *testing.T) {
 		}
 	}
 }
+
+func TestReadMemory_u16(t *testing.T) {
+	cpu := Cpu{}
+	cpu.memory[0x1000] = 0x11
+	cpu.memory[0x1001] = 0x22
+
+	value := cpu.readMemory_u16(0x1000)
+
+	if value != 0x2211 {
+		t.Errorf("wanted %#x but got %#x", 0x2211, value)
+	}
+}
+
+func TestWriteMemory_u16(t *testing.T) {
+	cpu := Cpu{}
+	cpu.writeMemory_u16(0x1000, 0x1122)
+
+	firstByte := cpu.memory[0x1000]
+	secondByte := cpu.memory[0x1000+1]
+
+	if firstByte != 0x22 {
+		t.Errorf("wanted %#x but got %#x", 0x22, firstByte)
+	}
+
+	if secondByte != 0x11 {
+		t.Errorf("wanted %#x but got %#x", 0x11, secondByte)
+	}
+}

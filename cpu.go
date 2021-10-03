@@ -76,14 +76,29 @@ func (c *Cpu) load(program []uint8) {
 	c.ProgramCounter = PROG_MEM_ADDRESS
 }
 
-// nes is little endian, but we deal with that when reading roms.
-// index is just a numerical value that we use directly to index into memory.
 func (c *Cpu) readMemory(index uint16) uint8 {
 	return c.memory[index]
 }
 
 func (c *Cpu) writeMemory(index uint16, value uint8) {
 	c.memory[index] = value
+}
+
+// nes is little-endian so 16-bit values read from memory need to handle this byte order.
+// NOTE: this just impacts the 16-bit values from memory, not the 16-bit memory index.
+func (c *Cpu) readMemory_u16(index uint16) uint16 {
+	firstByte := uint16(c.readMemory(index))
+	secondByte := uint16(c.readMemory(index + 1))
+	return (secondByte << 8) | (firstByte)
+}
+
+// nes is little-endian so 16-bit values written to memory need to handle this byte order.
+// NOTE: this just impacts the 16-bit values written to memory, not the 16-bit memory index.
+func (c *Cpu) writeMemory_u16(index uint16, value uint16) {
+	firstByte := (value) & 0xFF
+	secondByte := (value >> 8) & 0xFF
+	c.writeMemory(index, uint8(firstByte))
+	c.writeMemory(index+1, uint8(secondByte))
 }
 
 func (c *Cpu) updateFlags(result uint8) {
