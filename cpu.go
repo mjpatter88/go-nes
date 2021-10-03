@@ -10,7 +10,11 @@ const (
 	INX = 0xe8
 )
 
-const PROG_MEM_ADDRESS = 0x8000
+//Memory Addresses
+const (
+	PROG_MEM_ADDRESS           = 0x8000
+	PROG_REFERENCE_MEM_ADDRESS = 0xfffc
+)
 
 type StatusRegister struct {
 	Carry     bool
@@ -33,6 +37,7 @@ type Cpu struct {
 
 func (c *Cpu) Execute(program []uint8) {
 	c.load(program)
+	c.reset()
 	c.run()
 }
 
@@ -45,14 +50,11 @@ func (c *Cpu) run() {
 		case LDA:
 			param := c.readMemory(c.ProgramCounter)
 			c.ProgramCounter++
-			c.RegA = param
-			c.updateFlags(c.RegA)
+			c.instrLDA(param)
 		case TAX:
-			c.RegX = c.RegA
-			c.updateFlags(c.RegX)
+			c.instrTAX()
 		case INX:
-			c.RegX++
-			c.updateFlags(c.RegX)
+			c.instrINX()
 		case BRK:
 			c.Status.Break = true
 			return
@@ -73,7 +75,19 @@ func (c *Cpu) load(program []uint8) {
 		memIndex := PROG_MEM_ADDRESS + index
 		c.memory[memIndex] = byte
 	}
-	c.ProgramCounter = PROG_MEM_ADDRESS
+	// nes spec says to write program memory address into mem address 0xFFFC
+	// this value is then read into the program counter on system reset
+	// NOTE: presumably the program could be loaded into memory at a different address
+	// otherwise this additional level of indirection seems pointless. (?)
+	c.writeMemory_u16(PROG_REFERENCE_MEM_ADDRESS, PROG_MEM_ADDRESS)
+	c.ProgramCounter = 0x8000
+}
+
+func (c *Cpu) reset() {
+	c.resetStatus()
+	c.RegA = 0
+	c.RegX = 0
+	c.ProgramCounter = c.readMemory_u16(PROG_REFERENCE_MEM_ADDRESS)
 }
 
 func (c *Cpu) readMemory(index uint16) uint8 {
@@ -104,4 +118,23 @@ func (c *Cpu) writeMemory_u16(index uint16, value uint16) {
 func (c *Cpu) updateFlags(result uint8) {
 	c.Status.Zero = (result == 0)
 	c.Status.Negative = ((result & (1 << 7)) != 0)
+}
+
+func (c *Cpu) resetStatus() {
+	c.Status = StatusRegister{}
+}
+
+func (c *Cpu) instrLDA(param uint8) {
+	c.RegA = param
+	c.updateFlags(c.RegA)
+}
+
+func (c *Cpu) instrTAX() {
+	c.RegX = c.RegA
+	c.updateFlags(c.RegX)
+}
+
+func (c *Cpu) instrINX() {
+	c.RegX++
+	c.updateFlags(c.RegX)
 }

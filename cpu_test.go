@@ -12,7 +12,7 @@ func TestBRK(t *testing.T) {
 func TestLDA(t *testing.T) {
 	t.Run("LDA", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.Execute([]uint8{LDA, 0x4a, BRK})
+		cpu.instrLDA(0x4a)
 
 		AssertRegisterA(t, &cpu, 0x4a)
 		AssertZero(t, &cpu, false)
@@ -21,7 +21,7 @@ func TestLDA(t *testing.T) {
 
 	t.Run("Zero flag", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.Execute([]uint8{LDA, 0x00, BRK})
+		cpu.instrLDA(0x00)
 
 		AssertRegisterA(t, &cpu, 0x00)
 		AssertZero(t, &cpu, true)
@@ -30,7 +30,7 @@ func TestLDA(t *testing.T) {
 
 	t.Run("Negative flag", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.Execute([]uint8{LDA, 0xf0, BRK})
+		cpu.instrLDA(0xf0)
 		AssertRegisterA(t, &cpu, 0xf0)
 		AssertZero(t, &cpu, false)
 		AssertNegative(t, &cpu, true)
@@ -41,7 +41,7 @@ func TestTAX(t *testing.T) {
 	t.Run("TAX", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegA = 0x3a
-		cpu.Execute([]uint8{TAX, BRK})
+		cpu.instrTAX()
 
 		AssertRegisterX(t, &cpu, 0x3a)
 		AssertZero(t, &cpu, false)
@@ -51,7 +51,7 @@ func TestTAX(t *testing.T) {
 	t.Run("Zero flag", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegA = 0x00
-		cpu.Execute([]uint8{TAX, BRK})
+		cpu.instrTAX()
 
 		AssertRegisterX(t, &cpu, 0x00)
 		AssertZero(t, &cpu, true)
@@ -61,7 +61,7 @@ func TestTAX(t *testing.T) {
 	t.Run("Negative flag", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegA = 0xf0
-		cpu.Execute([]uint8{TAX, BRK})
+		cpu.instrTAX()
 
 		AssertRegisterX(t, &cpu, 0xf0)
 		AssertZero(t, &cpu, false)
@@ -73,7 +73,7 @@ func TestINX(t *testing.T) {
 	t.Run("INX", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegX = 0x3a
-		cpu.Execute([]uint8{INX, BRK})
+		cpu.instrINX()
 
 		AssertRegisterX(t, &cpu, 0x3b)
 		AssertZero(t, &cpu, false)
@@ -83,7 +83,7 @@ func TestINX(t *testing.T) {
 	t.Run("Zero flag", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegX = 0xff
-		cpu.Execute([]uint8{INX, BRK})
+		cpu.instrINX()
 
 		AssertRegisterX(t, &cpu, 0x00)
 		AssertZero(t, &cpu, true)
@@ -93,7 +93,7 @@ func TestINX(t *testing.T) {
 	t.Run("Negative flag", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegX = 0x7f
-		cpu.Execute([]uint8{INX, BRK})
+		cpu.instrINX()
 
 		AssertRegisterX(t, &cpu, 0x80)
 		AssertZero(t, &cpu, false)
@@ -105,6 +105,7 @@ func TestFiveInstructions(t *testing.T) {
 	cpu := Cpu{}
 	cpu.Execute([]uint8{LDA, 0xc0, TAX, INX, BRK})
 
+	AssertRegisterA(t, &cpu, 0xc0)
 	AssertRegisterX(t, &cpu, 0xc1)
 	AssertProgramCounter(t, &cpu, 0x8005)
 }
@@ -143,16 +144,44 @@ func AssertProgramCounter(t *testing.T, cpu *Cpu, value uint16) {
 }
 
 func TestLoad(t *testing.T) {
-	cpu := Cpu{}
-	programBytes := []uint8{0x01, 0x02, 0x03}
-	cpu.load(programBytes)
+	t.Run("Load Program", func(t *testing.T) {
+		cpu := Cpu{}
+		programBytes := []uint8{0x01, 0x02, 0x03}
+		cpu.load(programBytes)
 
-	for i := 0; i < 3; i++ {
-		memAddress := 0x8000 + i
-		if cpu.memory[memAddress] != uint8(i+1) {
-			t.Errorf("Expected memory[%#x] to be %#x but was %#x", memAddress, i, cpu.memory[memAddress])
+		for i := 0; i < 3; i++ {
+			memAddress := 0x8000 + i
+			if cpu.memory[memAddress] != uint8(i+1) {
+				t.Errorf("Expected memory[%#x] to be %#x but was %#x", memAddress, i, cpu.memory[memAddress])
+			}
 		}
-	}
+	})
+	t.Run("Sets Program Reference in Memory", func(t *testing.T) {
+		cpu := Cpu{}
+		programBytes := []uint8{0x01, 0x02, 0x03}
+		cpu.load(programBytes)
+
+		value := cpu.readMemory_u16(0xfffc)
+		if value != 0x8000 {
+			t.Errorf("Expected memory[0xfffc] to be %#x but was %#x", 0x8000, value)
+		}
+	})
+}
+
+func TestReset(t *testing.T) {
+	cpu := Cpu{}
+	cpu.Status.Zero = true
+	cpu.RegA = 0x11
+	cpu.RegX = 0x22
+	cpu.memory[0xfffc] = 0x34
+	cpu.memory[0xfffd] = 0x12
+
+	cpu.reset()
+
+	AssertZero(t, &cpu, false)
+	AssertRegisterX(t, &cpu, 0)
+	AssertRegisterA(t, &cpu, 0)
+	AssertProgramCounter(t, &cpu, 0x1234)
 }
 
 func TestReadMemory(t *testing.T) {
