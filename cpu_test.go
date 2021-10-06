@@ -42,6 +42,23 @@ func TestLDA(t *testing.T) {
 		cpu.Execute([]uint8{LDA_ZERO, 0x00, BRK})
 		AssertRegisterA(t, &cpu, 0xee)
 	})
+
+	t.Run("Zero Page X", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0x00ff] = 0xee
+		// Load 0xfe into a, transfer to x, the load from (0xfe + 1) into a
+		cpu.Execute([]uint8{LDA, 0xfe, TAX, LDA_ZERO_X, 0x01, BRK})
+		AssertRegisterA(t, &cpu, 0xee)
+	})
+
+	t.Run("Zero Page X - Address Overflow", func(t *testing.T) {
+		// If the summed address overflows one byte, then it should wrap around.
+		// Ex: 0xff + 0x05 -> 0x04
+		cpu := Cpu{}
+		cpu.memory[0x0004] = 0xee
+		cpu.Execute([]uint8{LDA, 0xff, TAX, LDA_ZERO_X, 0x05, BRK})
+		AssertRegisterA(t, &cpu, 0xee)
+	})
 }
 
 func TestTAX(t *testing.T) {

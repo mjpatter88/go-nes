@@ -4,11 +4,12 @@ import "fmt"
 
 // Opcodes
 const (
-	BRK      = 0x00
-	LDA      = 0xa9
-	LDA_ZERO = 0xa5
-	TAX      = 0xaa
-	INX      = 0xe8
+	BRK        = 0x00
+	LDA        = 0xa9
+	LDA_ZERO   = 0xa5
+	LDA_ZERO_X = 0xb5
+	TAX        = 0xaa
+	INX        = 0xe8
 )
 
 //Memory Addresses
@@ -54,6 +55,12 @@ func (c *Cpu) run() {
 			c.instrLDA(param)
 		case LDA_ZERO:
 			address := c.readMemory(c.ProgramCounter)
+			c.ProgramCounter++
+			c.instrLDA(c.readMemory(uint16(address)))
+		case LDA_ZERO_X:
+			// Address is a byte and the overflow/wrap behavior is intentional.
+			address := c.readMemory(c.ProgramCounter)
+			address += c.RegX
 			c.ProgramCounter++
 			c.instrLDA(c.readMemory(uint16(address)))
 		case TAX:
