@@ -10,7 +10,7 @@ func TestBRK(t *testing.T) {
 }
 
 func TestLDA(t *testing.T) {
-	t.Run("LDA", func(t *testing.T) {
+	t.Run("Immediate Mode", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.instrLDA(0x4a)
 
@@ -34,6 +34,13 @@ func TestLDA(t *testing.T) {
 		AssertRegisterA(t, &cpu, 0xf0)
 		AssertZero(t, &cpu, false)
 		AssertNegative(t, &cpu, true)
+	})
+
+	t.Run("Zero Page", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0x0000] = 0xee
+		cpu.Execute([]uint8{LDA_ZERO, 0x00, BRK})
+		AssertRegisterA(t, &cpu, 0xee)
 	})
 }
 

@@ -4,10 +4,11 @@ import "fmt"
 
 // Opcodes
 const (
-	BRK = 0x00
-	LDA = 0xa9
-	TAX = 0xaa
-	INX = 0xe8
+	BRK      = 0x00
+	LDA      = 0xa9
+	LDA_ZERO = 0xa5
+	TAX      = 0xaa
+	INX      = 0xe8
 )
 
 //Memory Addresses
@@ -51,6 +52,10 @@ func (c *Cpu) run() {
 			param := c.readMemory(c.ProgramCounter)
 			c.ProgramCounter++
 			c.instrLDA(param)
+		case LDA_ZERO:
+			address := c.readMemory(c.ProgramCounter)
+			c.ProgramCounter++
+			c.instrLDA(c.readMemory(uint16(address)))
 		case TAX:
 			c.instrTAX()
 		case INX:
