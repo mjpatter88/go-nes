@@ -85,6 +85,8 @@ func (c *Cpu) run() {
 			c.instrLDA(c.readMemory(uint16(address)))
 		case TAX:
 			c.instrTAX()
+		case TAY:
+			c.instrTAY()
 		case INX:
 			c.instrINX()
 		case BRK:
