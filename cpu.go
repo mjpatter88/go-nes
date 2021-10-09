@@ -10,6 +10,7 @@ const (
 	LDA_ZERO_X = 0xb5
 	LDA_ABS    = 0xad
 	LDA_ABS_X  = 0xbd
+	LDA_ABS_Y  = 0xb9
 	TAX        = 0xaa
 	TAY        = 0xa8
 	INX        = 0xe8
@@ -82,6 +83,14 @@ func (c *Cpu) run() {
 			addressB := c.readMemory(c.ProgramCounter)
 			c.ProgramCounter++
 			address := (uint16(addressA) << 8) | (uint16(addressB)) + uint16(c.RegX)
+			c.instrLDA(c.readMemory(uint16(address)))
+		case LDA_ABS_Y:
+			// Address is two bytes little endian
+			addressA := c.readMemory(c.ProgramCounter)
+			c.ProgramCounter++
+			addressB := c.readMemory(c.ProgramCounter)
+			c.ProgramCounter++
+			address := (uint16(addressA) << 8) | (uint16(addressB)) + uint16(c.RegY)
 			c.instrLDA(c.readMemory(uint16(address)))
 		case TAX:
 			c.instrTAX()
