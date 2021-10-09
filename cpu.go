@@ -12,6 +12,7 @@ const (
 	LDA_ABS_X  = 0xbd
 	LDA_ABS_Y  = 0xb9
 	LDA_IND_X  = 0xa1
+	LDA_IND_Y  = 0xb1
 	TAX        = 0xaa
 	TAY        = 0xa8
 	INX        = 0xe8
@@ -97,6 +98,19 @@ func (c *Cpu) run() {
 			// Initial address is a byte and the overflow/wrap behavior is intentional.
 			address := c.readMemory(c.ProgramCounter)
 			address += c.RegX
+			c.ProgramCounter++
+
+			// Use the initial address to read an address from memory.
+			index := uint16(address)
+			// Address is two bytes little endian (LSB first)
+			addressA := c.readMemory(index)
+			addressB := c.readMemory(index + 1)
+			finalAddress := (uint16(addressB) << 8) | (uint16(addressA))
+			c.instrLDA(c.readMemory(uint16(finalAddress)))
+		case LDA_IND_Y:
+			// Initial address is a byte and the overflow/wrap behavior is intentional.
+			address := c.readMemory(c.ProgramCounter)
+			address += c.RegY
 			c.ProgramCounter++
 
 			// Use the initial address to read an address from memory.

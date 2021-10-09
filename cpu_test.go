@@ -92,6 +92,15 @@ func TestLDA(t *testing.T) {
 		cpu.Execute([]uint8{LDA, 0x01, TAX, LDA_IND_X, 0xfd, BRK})
 		AssertRegisterA(t, &cpu, 0xee)
 	})
+
+	t.Run("Indirect Y", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0x00fe] = 0xaa
+		cpu.memory[0x00ff] = 0xcc
+		cpu.memory[0xccaa] = 0xee
+		cpu.Execute([]uint8{LDA, 0x01, TAY, LDA_IND_Y, 0xfd, BRK})
+		AssertRegisterA(t, &cpu, 0xee)
+	})
 }
 
 func TestTAX(t *testing.T) {
