@@ -67,6 +67,14 @@ func TestLDA(t *testing.T) {
 		cpu.Execute([]uint8{LDA_ABS, 0xcc, 0xaa, BRK})
 		AssertRegisterA(t, &cpu, 0xee)
 	})
+
+	t.Run("Absolute X", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0xccab] = 0xee
+		// Remember little-endian applies to the absolute address
+		cpu.Execute([]uint8{LDA, 0x01, TAX, LDA_ABS_X, 0xcc, 0xaa, BRK})
+		AssertRegisterA(t, &cpu, 0xee)
+	})
 }
 
 func TestTAX(t *testing.T) {
