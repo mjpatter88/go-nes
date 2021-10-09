@@ -11,6 +11,7 @@ const (
 	LDA_ABS    = 0xad
 	LDA_ABS_X  = 0xbd
 	TAX        = 0xaa
+	TAY        = 0xa8
 	INX        = 0xe8
 )
 
@@ -34,6 +35,7 @@ type StatusRegister struct {
 type Cpu struct {
 	RegA           uint8
 	RegX           uint8
+	RegY           uint8
 	Status         StatusRegister
 	ProgramCounter uint16
 	memory         [0xffff]uint8
@@ -162,6 +164,11 @@ func (c *Cpu) instrLDA(param uint8) {
 func (c *Cpu) instrTAX() {
 	c.RegX = c.RegA
 	c.updateFlags(c.RegX)
+}
+
+func (c *Cpu) instrTAY() {
+	c.RegY = c.RegA
+	c.updateFlags(c.RegY)
 }
 
 func (c *Cpu) instrINX() {

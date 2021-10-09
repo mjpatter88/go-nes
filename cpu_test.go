@@ -109,6 +109,38 @@ func TestTAX(t *testing.T) {
 	})
 }
 
+func TestTAY(t *testing.T) {
+	t.Run("TAY", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegA = 0x3a
+		cpu.instrTAY()
+
+		AssertRegisterY(t, &cpu, 0x3a)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("Zero flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegA = 0x00
+		cpu.instrTAY()
+
+		AssertRegisterY(t, &cpu, 0x00)
+		AssertZero(t, &cpu, true)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("Negative flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegA = 0xf0
+		cpu.instrTAY()
+
+		AssertRegisterY(t, &cpu, 0xf0)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, true)
+	})
+}
+
 func TestINX(t *testing.T) {
 	t.Run("INX", func(t *testing.T) {
 		cpu := Cpu{}
@@ -174,6 +206,12 @@ func AssertRegisterA(t *testing.T, cpu *Cpu, value uint8) {
 func AssertRegisterX(t *testing.T, cpu *Cpu, value uint8) {
 	if cpu.RegX != value {
 		t.Errorf("Expected registerX to be %#x but was %#x", value, cpu.RegX)
+	}
+}
+
+func AssertRegisterY(t *testing.T, cpu *Cpu, value uint8) {
+	if cpu.RegY != value {
+		t.Errorf("Expected registerY to be %#x but was %#x", value, cpu.RegX)
 	}
 }
 
