@@ -345,3 +345,32 @@ func TestWriteMemory_u16(t *testing.T) {
 		t.Errorf("wanted %#x but got %#x", 0x11, secondByte)
 	}
 }
+
+func TestImmediateMode(t *testing.T) {
+	cpu := Cpu{}
+	cpu.ProgramCounter = 0x02
+	cpu.memory[0x02] = 0xff
+	value := cpu.ImmediateMode()
+
+	if value != 0xff {
+		t.Errorf("Expected %#x but got %#x", 0xff, value)
+	}
+	if cpu.ProgramCounter != 0x03 {
+		t.Errorf("Expected the program counter to have been incremented but it wasn't")
+	}
+}
+
+func TestZeroMode(t *testing.T) {
+	cpu := Cpu{}
+	cpu.ProgramCounter = 0x02
+	cpu.memory[0x02] = 0x05
+	cpu.memory[0x05] = 0xff
+	value := cpu.ZeroMode()
+
+	if value != 0xff {
+		t.Errorf("Expected %#x but got %#x", 0xff, value)
+	}
+	if cpu.ProgramCounter != 0x03 {
+		t.Errorf("Expected the program counter to have been incremented but it wasn't")
+	}
+}

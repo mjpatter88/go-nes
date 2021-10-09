@@ -57,13 +57,9 @@ func (c *Cpu) run() {
 
 		switch opcode {
 		case LDA:
-			param := c.readMemory(c.ProgramCounter)
-			c.ProgramCounter++
-			c.instrLDA(param)
+			c.instrLDA(c.ImmediateMode())
 		case LDA_ZERO:
-			address := c.readMemory(c.ProgramCounter)
-			c.ProgramCounter++
-			c.instrLDA(c.readMemory(uint16(address)))
+			c.instrLDA(c.ZeroMode())
 		case LDA_ZERO_X:
 			// Address is a byte and the overflow/wrap behavior is intentional.
 			address := c.readMemory(c.ProgramCounter)
@@ -213,4 +209,21 @@ func (c *Cpu) instrTAY() {
 func (c *Cpu) instrINX() {
 	c.RegX++
 	c.updateFlags(c.RegX)
+}
+
+// https://skilldrick.github.io/easy6502/#addressing
+func (c *Cpu) ImmediateMode() uint8 {
+	// Use the program counter to return the value directly after the opcode.
+	// Incrememnts program counter by 1.
+	value := c.readMemory(c.ProgramCounter)
+	c.ProgramCounter++
+	return value
+}
+
+func (c *Cpu) ZeroMode() uint8 {
+	// Use the value stored directly after the opcode as an index into memory and return the value stored there.
+	// Incrememnts program counter by 1.
+	address := c.readMemory(c.ProgramCounter)
+	c.ProgramCounter++
+	return c.readMemory(uint16(address))
 }
