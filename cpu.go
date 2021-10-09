@@ -104,7 +104,7 @@ func (c *Cpu) run() {
 			// Address is two bytes little endian (LSB first)
 			addressA := c.readMemory(index)
 			addressB := c.readMemory(index + 1)
-			finalAddress := (uint16(addressB) << 8) | (uint16(addressA)) + uint16(c.RegY)
+			finalAddress := (uint16(addressB) << 8) | (uint16(addressA))
 			c.instrLDA(c.readMemory(uint16(finalAddress)))
 		case TAX:
 			c.instrTAX()
