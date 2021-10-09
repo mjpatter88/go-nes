@@ -75,7 +75,7 @@ func (c *Cpu) run() {
 			c.ProgramCounter++
 			addressB := c.readMemory(c.ProgramCounter)
 			c.ProgramCounter++
-			address := (uint16(addressA) << 8) | (uint16(addressB))
+			address := (uint16(addressB) << 8) | (uint16(addressA))
 			c.instrLDA(c.readMemory(uint16(address)))
 		case LDA_ABS_X:
 			// Address is two bytes little endian
@@ -83,7 +83,7 @@ func (c *Cpu) run() {
 			c.ProgramCounter++
 			addressB := c.readMemory(c.ProgramCounter)
 			c.ProgramCounter++
-			address := (uint16(addressA) << 8) | (uint16(addressB)) + uint16(c.RegX)
+			address := (uint16(addressB) << 8) | (uint16(addressA)) + uint16(c.RegX)
 			c.instrLDA(c.readMemory(uint16(address)))
 		case LDA_ABS_Y:
 			// Address is two bytes little endian
@@ -91,7 +91,7 @@ func (c *Cpu) run() {
 			c.ProgramCounter++
 			addressB := c.readMemory(c.ProgramCounter)
 			c.ProgramCounter++
-			address := (uint16(addressA) << 8) | (uint16(addressB)) + uint16(c.RegY)
+			address := (uint16(addressB) << 8) | (uint16(addressA)) + uint16(c.RegY)
 			c.instrLDA(c.readMemory(uint16(address)))
 		case LDA_IND_X:
 			// Initial address is a byte and the overflow/wrap behavior is intentional.

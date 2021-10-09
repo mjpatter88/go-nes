@@ -64,7 +64,7 @@ func TestLDA(t *testing.T) {
 		cpu := Cpu{}
 		cpu.memory[0xccaa] = 0xee
 		// Remember little-endian applies to the absolute address
-		cpu.Execute([]uint8{LDA_ABS, 0xcc, 0xaa, BRK})
+		cpu.Execute([]uint8{LDA_ABS, 0xaa, 0xcc, BRK})
 		AssertRegisterA(t, &cpu, 0xee)
 	})
 
@@ -72,7 +72,7 @@ func TestLDA(t *testing.T) {
 		cpu := Cpu{}
 		cpu.memory[0xccab] = 0xee
 		// Remember little-endian applies to the absolute address
-		cpu.Execute([]uint8{LDA, 0x01, TAX, LDA_ABS_X, 0xcc, 0xaa, BRK})
+		cpu.Execute([]uint8{LDA, 0x01, TAX, LDA_ABS_X, 0xaa, 0xcc, BRK})
 		AssertRegisterA(t, &cpu, 0xee)
 	})
 
@@ -80,7 +80,7 @@ func TestLDA(t *testing.T) {
 		cpu := Cpu{}
 		cpu.memory[0xccab] = 0xee
 		// Remember little-endian applies to the absolute address
-		cpu.Execute([]uint8{LDA, 0x01, TAY, LDA_ABS_Y, 0xcc, 0xaa, BRK})
+		cpu.Execute([]uint8{LDA, 0x01, TAY, LDA_ABS_Y, 0xaa, 0xcc, BRK})
 		AssertRegisterA(t, &cpu, 0xee)
 	})
 
