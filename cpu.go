@@ -69,13 +69,7 @@ func (c *Cpu) run() {
 		case LDA_ABS:
 			c.instrLDA(c.AbsoluteMode())
 		case LDA_ABS_X:
-			// Address is two bytes little endian
-			addressA := c.readMemory(c.ProgramCounter)
-			c.ProgramCounter++
-			addressB := c.readMemory(c.ProgramCounter)
-			c.ProgramCounter++
-			address := (uint16(addressB) << 8) | (uint16(addressA)) + uint16(c.RegX)
-			c.instrLDA(c.readMemory(uint16(address)))
+			c.instrLDA(c.AbsoluteXMode())
 		case LDA_ABS_Y:
 			// Address is two bytes little endian
 			addressA := c.readMemory(c.ProgramCounter)
@@ -248,6 +242,20 @@ func (c *Cpu) AbsoluteMode() uint8 {
 	c.ProgramCounter++
 	addressB := c.readMemory(c.ProgramCounter)
 	c.ProgramCounter++
-	address := (uint16(addressB) << 8) | (uint16(addressA)) + uint16(c.RegX)
+	address := (uint16(addressB) << 8) | (uint16(addressA))
 	return c.readMemory(address)
+}
+
+func (c *Cpu) AbsoluteXMode() uint8 {
+	// Same as AbsoluteMode but the value in the X register is added to
+	// the memory address.
+	//
+	// Incrememnts program counter by 2.
+
+	addressA := c.readMemory(c.ProgramCounter)
+	c.ProgramCounter++
+	addressB := c.readMemory(c.ProgramCounter)
+	c.ProgramCounter++
+	address := (uint16(addressB) << 8) | (uint16(addressA)) + uint16(c.RegX)
+	return c.readMemory(uint16(address))
 }
