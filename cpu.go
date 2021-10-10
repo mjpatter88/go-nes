@@ -210,12 +210,8 @@ func (c *Cpu) AbsoluteMode() uint8 {
 	//
 	// Incrememnts program counter by 2.
 
-	// TODO(mjpatter88): In all these cases, use the readMem_u16 function.
-	addressA := c.readMemory(c.ProgramCounter)
-	c.ProgramCounter++
-	addressB := c.readMemory(c.ProgramCounter)
-	c.ProgramCounter++
-	address := (uint16(addressB) << 8) | (uint16(addressA))
+	address := c.readMemory_u16(c.ProgramCounter)
+	c.ProgramCounter += 2
 	return c.readMemory(address)
 }
 
@@ -225,11 +221,9 @@ func (c *Cpu) AbsoluteXMode() uint8 {
 	//
 	// Incrememnts program counter by 2.
 
-	addressA := c.readMemory(c.ProgramCounter)
-	c.ProgramCounter++
-	addressB := c.readMemory(c.ProgramCounter)
-	c.ProgramCounter++
-	address := (uint16(addressB) << 8) | (uint16(addressA)) + uint16(c.RegX)
+	address := c.readMemory_u16(c.ProgramCounter)
+	c.ProgramCounter += 2
+	address += uint16(c.RegX)
 	return c.readMemory(uint16(address))
 }
 
@@ -239,11 +233,9 @@ func (c *Cpu) AbsoluteYMode() uint8 {
 	//
 	// Incrememnts program counter by 2.
 
-	addressA := c.readMemory(c.ProgramCounter)
-	c.ProgramCounter++
-	addressB := c.readMemory(c.ProgramCounter)
-	c.ProgramCounter++
-	address := (uint16(addressB) << 8) | (uint16(addressA)) + uint16(c.RegY)
+	address := c.readMemory_u16(c.ProgramCounter)
+	c.ProgramCounter += 2
+	address += uint16(c.RegY)
 	return c.readMemory(uint16(address))
 }
 
@@ -257,17 +249,14 @@ func (c *Cpu) IndirectXMode() uint8 {
 	// Incrememnts program counter by 1.
 
 	// Initial address is a byte and the overflow/wrap behavior is intentional.
-	address := c.readMemory(c.ProgramCounter)
-	address += c.RegX
+	index := c.readMemory(c.ProgramCounter)
+	index += c.RegX
 	c.ProgramCounter++
 
 	// Use the initial address to read an address from memory.
-	index := uint16(address)
 	// Address is two bytes little endian (LSB first)
-	addressA := c.readMemory(index)
-	addressB := c.readMemory(index + 1)
-	finalAddress := (uint16(addressB) << 8) | (uint16(addressA))
-	return c.readMemory(uint16(finalAddress))
+	address := c.readMemory_u16(uint16(index))
+	return c.readMemory(address)
 }
 
 func (c *Cpu) IndirectYMode() uint8 {
@@ -276,15 +265,12 @@ func (c *Cpu) IndirectYMode() uint8 {
 	// Incrememnts program counter by 2.
 
 	// Initial address is a byte and the overflow/wrap behavior is intentional.
-	address := c.readMemory(c.ProgramCounter)
-	address += c.RegY
+	index := c.readMemory(c.ProgramCounter)
+	index += c.RegY
 	c.ProgramCounter++
 
 	// Use the initial address to read an address from memory.
-	index := uint16(address)
 	// Address is two bytes little endian (LSB first)
-	addressA := c.readMemory(index)
-	addressB := c.readMemory(index + 1)
-	finalAddress := (uint16(addressB) << 8) | (uint16(addressA))
-	return c.readMemory(uint16(finalAddress))
+	address := c.readMemory_u16(uint16(index))
+	return c.readMemory(address)
 }
