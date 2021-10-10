@@ -457,3 +457,20 @@ func TestIndirectXMode(t *testing.T) {
 		t.Errorf("Expected the program counter to have been incremented but it wasn't")
 	}
 }
+
+func TestIndirectYMode(t *testing.T) {
+	cpu := Cpu{}
+	cpu.ProgramCounter = 0x02
+	cpu.RegY = 0x01
+	cpu.memory[0x02] = 0x34
+	cpu.memory[0x35] = 0xab
+	cpu.memory[0xab] = 0xff
+	value := cpu.IndirectYMode()
+
+	if value != 0xff {
+		t.Errorf("Expected %#x but got %#x", 0xff, value)
+	}
+	if cpu.ProgramCounter != 0x03 {
+		t.Errorf("Expected the program counter to have been incremented but it wasn't")
+	}
+}

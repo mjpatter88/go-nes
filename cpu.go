@@ -75,18 +75,7 @@ func (c *Cpu) run() {
 		case LDA_IND_X:
 			c.instrLDA(c.IndirectXMode())
 		case LDA_IND_Y:
-			// Initial address is a byte and the overflow/wrap behavior is intentional.
-			address := c.readMemory(c.ProgramCounter)
-			address += c.RegY
-			c.ProgramCounter++
-
-			// Use the initial address to read an address from memory.
-			index := uint16(address)
-			// Address is two bytes little endian (LSB first)
-			addressA := c.readMemory(index)
-			addressB := c.readMemory(index + 1)
-			finalAddress := (uint16(addressB) << 8) | (uint16(addressA))
-			c.instrLDA(c.readMemory(uint16(finalAddress)))
+			c.instrLDA(c.IndirectYMode())
 		case TAX:
 			c.instrTAX()
 		case TAY:
@@ -265,11 +254,30 @@ func (c *Cpu) IndirectXMode() uint8 {
 	// this index and then use that value as another index.
 	// Return the value stored in memory at that second index.
 	//
-	// Incrememnts program counter by 2.
+	// Incrememnts program counter by 1.
 
 	// Initial address is a byte and the overflow/wrap behavior is intentional.
 	address := c.readMemory(c.ProgramCounter)
 	address += c.RegX
+	c.ProgramCounter++
+
+	// Use the initial address to read an address from memory.
+	index := uint16(address)
+	// Address is two bytes little endian (LSB first)
+	addressA := c.readMemory(index)
+	addressB := c.readMemory(index + 1)
+	finalAddress := (uint16(addressB) << 8) | (uint16(addressA))
+	return c.readMemory(uint16(finalAddress))
+}
+
+func (c *Cpu) IndirectYMode() uint8 {
+	// Same as IndirectXMode but with the Y register.
+	//
+	// Incrememnts program counter by 2.
+
+	// Initial address is a byte and the overflow/wrap behavior is intentional.
+	address := c.readMemory(c.ProgramCounter)
+	address += c.RegY
 	c.ProgramCounter++
 
 	// Use the initial address to read an address from memory.
