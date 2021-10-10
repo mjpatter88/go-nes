@@ -73,18 +73,7 @@ func (c *Cpu) run() {
 		case LDA_ABS_Y:
 			c.instrLDA(c.AbsoluteYMode())
 		case LDA_IND_X:
-			// Initial address is a byte and the overflow/wrap behavior is intentional.
-			address := c.readMemory(c.ProgramCounter)
-			address += c.RegX
-			c.ProgramCounter++
-
-			// Use the initial address to read an address from memory.
-			index := uint16(address)
-			// Address is two bytes little endian (LSB first)
-			addressA := c.readMemory(index)
-			addressB := c.readMemory(index + 1)
-			finalAddress := (uint16(addressB) << 8) | (uint16(addressA))
-			c.instrLDA(c.readMemory(uint16(finalAddress)))
+			c.instrLDA(c.IndirectXMode())
 		case LDA_IND_Y:
 			// Initial address is a byte and the overflow/wrap behavior is intentional.
 			address := c.readMemory(c.ProgramCounter)
@@ -232,6 +221,7 @@ func (c *Cpu) AbsoluteMode() uint8 {
 	//
 	// Incrememnts program counter by 2.
 
+	// TODO(mjpatter88): In all these cases, use the readMem_u16 function.
 	addressA := c.readMemory(c.ProgramCounter)
 	c.ProgramCounter++
 	addressB := c.readMemory(c.ProgramCounter)
@@ -266,4 +256,27 @@ func (c *Cpu) AbsoluteYMode() uint8 {
 	c.ProgramCounter++
 	address := (uint16(addressB) << 8) | (uint16(addressA)) + uint16(c.RegY)
 	return c.readMemory(uint16(address))
+}
+
+func (c *Cpu) IndirectXMode() uint8 {
+	// Use the two bytes stored directly after the opcode as an index into memory.
+	// Treat them as litte endian (LSB first). Add the value in the X register.
+	// Use this sum as an initial index. Lookup the value stored in memory at
+	// this index and then use that value as another index.
+	// Return the value stored in memory at that second index.
+	//
+	// Incrememnts program counter by 2.
+
+	// Initial address is a byte and the overflow/wrap behavior is intentional.
+	address := c.readMemory(c.ProgramCounter)
+	address += c.RegX
+	c.ProgramCounter++
+
+	// Use the initial address to read an address from memory.
+	index := uint16(address)
+	// Address is two bytes little endian (LSB first)
+	addressA := c.readMemory(index)
+	addressB := c.readMemory(index + 1)
+	finalAddress := (uint16(addressB) << 8) | (uint16(addressA))
+	return c.readMemory(uint16(finalAddress))
 }
