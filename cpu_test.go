@@ -374,3 +374,35 @@ func TestZeroMode(t *testing.T) {
 		t.Errorf("Expected the program counter to have been incremented but it wasn't")
 	}
 }
+
+func TestZeroXMode(t *testing.T) {
+	cpu := Cpu{}
+	cpu.ProgramCounter = 0x02
+	cpu.RegX = 0x01
+	cpu.memory[0x02] = 0x05
+	cpu.memory[0x06] = 0xff
+	value := cpu.ZeroXMode()
+
+	if value != 0xff {
+		t.Errorf("Expected %#x but got %#x", 0xff, value)
+	}
+	if cpu.ProgramCounter != 0x03 {
+		t.Errorf("Expected the program counter to have been incremented but it wasn't")
+	}
+}
+
+func TestAbsoluteMode(t *testing.T) {
+	cpu := Cpu{}
+	cpu.ProgramCounter = 0x02
+	cpu.memory[0x02] = 0x34
+	cpu.memory[0x03] = 0x12
+	cpu.memory[0x1234] = 0xab
+	value := cpu.AbsoluteMode()
+
+	if value != 0xab {
+		t.Errorf("Expected %#x but got %#x", 0xab, value)
+	}
+	if cpu.ProgramCounter != 0x04 {
+		t.Errorf("Expected the program counter to have been incremented by two but it wasn't")
+	}
+}

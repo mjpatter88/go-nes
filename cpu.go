@@ -52,6 +52,10 @@ func (c *Cpu) Execute(program []uint8) {
 
 func (c *Cpu) run() {
 	for {
+		// TODO(mjpatter88): future refactor idea: first decode opcode into instr + mode.
+		// Then have two switch statements. First uses the addressing mode to calculate
+		// a "value". Second switches on the instruction and calls the
+		// corresponding instruction with the "value" calculated above.
 		opcode := c.readMemory(c.ProgramCounter)
 		c.ProgramCounter++
 
@@ -61,19 +65,9 @@ func (c *Cpu) run() {
 		case LDA_ZERO:
 			c.instrLDA(c.ZeroMode())
 		case LDA_ZERO_X:
-			// Address is a byte and the overflow/wrap behavior is intentional.
-			address := c.readMemory(c.ProgramCounter)
-			address += c.RegX
-			c.ProgramCounter++
-			c.instrLDA(c.readMemory(uint16(address)))
+			c.instrLDA(c.ZeroXMode())
 		case LDA_ABS:
-			// Address is two bytes little endian
-			addressA := c.readMemory(c.ProgramCounter)
-			c.ProgramCounter++
-			addressB := c.readMemory(c.ProgramCounter)
-			c.ProgramCounter++
-			address := (uint16(addressB) << 8) | (uint16(addressA))
-			c.instrLDA(c.readMemory(uint16(address)))
+			c.instrLDA(c.AbsoluteMode())
 		case LDA_ABS_X:
 			// Address is two bytes little endian
 			addressA := c.readMemory(c.ProgramCounter)
@@ -214,6 +208,7 @@ func (c *Cpu) instrINX() {
 // https://skilldrick.github.io/easy6502/#addressing
 func (c *Cpu) ImmediateMode() uint8 {
 	// Use the program counter to return the value directly after the opcode.
+	//
 	// Incrememnts program counter by 1.
 	value := c.readMemory(c.ProgramCounter)
 	c.ProgramCounter++
@@ -222,8 +217,37 @@ func (c *Cpu) ImmediateMode() uint8 {
 
 func (c *Cpu) ZeroMode() uint8 {
 	// Use the value stored directly after the opcode as an index into memory and return the value stored there.
+	//
 	// Incrememnts program counter by 1.
 	address := c.readMemory(c.ProgramCounter)
 	c.ProgramCounter++
 	return c.readMemory(uint16(address))
+}
+
+func (c *Cpu) ZeroXMode() uint8 {
+	// Calculate a memory address by adding the value stored directly after the opcode
+	// add the value in the x register.
+	// Return the value stored at that address.
+	//
+	// Incrememnts program counter by 1.
+
+	// Address is a byte and the overflow/wrap behavior is intentional.
+	address := c.readMemory(c.ProgramCounter)
+	address += c.RegX
+	c.ProgramCounter++
+	return c.readMemory(uint16(address))
+}
+
+func (c *Cpu) AbsoluteMode() uint8 {
+	// Use the two bytes stored directly after the opcode as an index into memory.
+	// Treat them as litte endian (LSB first).
+	//
+	// Incrememnts program counter by 2.
+
+	addressA := c.readMemory(c.ProgramCounter)
+	c.ProgramCounter++
+	addressB := c.readMemory(c.ProgramCounter)
+	c.ProgramCounter++
+	address := (uint16(addressB) << 8) | (uint16(addressA)) + uint16(c.RegX)
+	return c.readMemory(address)
 }
