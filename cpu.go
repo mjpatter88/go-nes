@@ -71,13 +71,7 @@ func (c *Cpu) run() {
 		case LDA_ABS_X:
 			c.instrLDA(c.AbsoluteXMode())
 		case LDA_ABS_Y:
-			// Address is two bytes little endian
-			addressA := c.readMemory(c.ProgramCounter)
-			c.ProgramCounter++
-			addressB := c.readMemory(c.ProgramCounter)
-			c.ProgramCounter++
-			address := (uint16(addressB) << 8) | (uint16(addressA)) + uint16(c.RegY)
-			c.instrLDA(c.readMemory(uint16(address)))
+			c.instrLDA(c.AbsoluteYMode())
 		case LDA_IND_X:
 			// Initial address is a byte and the overflow/wrap behavior is intentional.
 			address := c.readMemory(c.ProgramCounter)
@@ -257,5 +251,19 @@ func (c *Cpu) AbsoluteXMode() uint8 {
 	addressB := c.readMemory(c.ProgramCounter)
 	c.ProgramCounter++
 	address := (uint16(addressB) << 8) | (uint16(addressA)) + uint16(c.RegX)
+	return c.readMemory(uint16(address))
+}
+
+func (c *Cpu) AbsoluteYMode() uint8 {
+	// Same as AbsoluteMode but the value in the Y register is added to
+	// the memory address.
+	//
+	// Incrememnts program counter by 2.
+
+	addressA := c.readMemory(c.ProgramCounter)
+	c.ProgramCounter++
+	addressB := c.readMemory(c.ProgramCounter)
+	c.ProgramCounter++
+	address := (uint16(addressB) << 8) | (uint16(addressA)) + uint16(c.RegY)
 	return c.readMemory(uint16(address))
 }

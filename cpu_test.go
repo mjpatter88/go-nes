@@ -423,3 +423,20 @@ func TestAbsoluteXMode(t *testing.T) {
 		t.Errorf("Expected the program counter to have been incremented by two but it wasn't")
 	}
 }
+
+func TestAbsoluteYMode(t *testing.T) {
+	cpu := Cpu{}
+	cpu.ProgramCounter = 0x02
+	cpu.RegY = 0x01
+	cpu.memory[0x02] = 0x34
+	cpu.memory[0x03] = 0x12
+	cpu.memory[0x1235] = 0xab
+	value := cpu.AbsoluteYMode()
+
+	if value != 0xab {
+		t.Errorf("Expected %#x but got %#x", 0xab, value)
+	}
+	if cpu.ProgramCounter != 0x04 {
+		t.Errorf("Expected the program counter to have been incremented by two but it wasn't")
+	}
+}
