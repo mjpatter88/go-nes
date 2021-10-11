@@ -35,72 +35,6 @@ func TestLDA(t *testing.T) {
 		AssertZero(t, &cpu, false)
 		AssertNegative(t, &cpu, true)
 	})
-
-	t.Run("Zero Page", func(t *testing.T) {
-		cpu := Cpu{}
-		cpu.memory[0x0000] = 0xee
-		cpu.Execute([]uint8{LDA_ZERO, 0x00, BRK})
-		AssertRegisterA(t, &cpu, 0xee)
-	})
-
-	t.Run("Zero Page X", func(t *testing.T) {
-		cpu := Cpu{}
-		cpu.memory[0x00ff] = 0xee
-		// Load 0xfe into a, transfer to x, the load from (0xfe + 1) into a
-		cpu.Execute([]uint8{LDA, 0xfe, TAX, LDA_ZERO_X, 0x01, BRK})
-		AssertRegisterA(t, &cpu, 0xee)
-	})
-
-	t.Run("Zero Page X - Address Overflow", func(t *testing.T) {
-		// If the summed address overflows one byte, then it should wrap around.
-		// Ex: 0xff + 0x05 -> 0x04
-		cpu := Cpu{}
-		cpu.memory[0x0004] = 0xee
-		cpu.Execute([]uint8{LDA, 0xff, TAX, LDA_ZERO_X, 0x05, BRK})
-		AssertRegisterA(t, &cpu, 0xee)
-	})
-
-	t.Run("Absolute", func(t *testing.T) {
-		cpu := Cpu{}
-		cpu.memory[0xccaa] = 0xee
-		// Remember little-endian applies to the absolute address
-		cpu.Execute([]uint8{LDA_ABS, 0xaa, 0xcc, BRK})
-		AssertRegisterA(t, &cpu, 0xee)
-	})
-
-	t.Run("Absolute X", func(t *testing.T) {
-		cpu := Cpu{}
-		cpu.memory[0xccab] = 0xee
-		// Remember little-endian applies to the absolute address
-		cpu.Execute([]uint8{LDA, 0x01, TAX, LDA_ABS_X, 0xaa, 0xcc, BRK})
-		AssertRegisterA(t, &cpu, 0xee)
-	})
-
-	t.Run("Absolute Y", func(t *testing.T) {
-		cpu := Cpu{}
-		cpu.memory[0xccab] = 0xee
-		// Remember little-endian applies to the absolute address
-		cpu.Execute([]uint8{LDA, 0x01, TAY, LDA_ABS_Y, 0xaa, 0xcc, BRK})
-		AssertRegisterA(t, &cpu, 0xee)
-	})
-
-	t.Run("Indirect X", func(t *testing.T) {
-		cpu := Cpu{}
-		cpu.memory[0x00fe] = 0xaa
-		cpu.memory[0x00ff] = 0xcc
-		cpu.memory[0xccaa] = 0xee
-		cpu.Execute([]uint8{LDA, 0x01, TAX, LDA_IND_X, 0xfd, BRK})
-		AssertRegisterA(t, &cpu, 0xee)
-	})
-
-	t.Run("Indirect Y", func(t *testing.T) {
-		cpu := Cpu{}
-		cpu.memory[0x00fe] = 0xaa
-		cpu.memory[0x00ff] = 0xcc
-		cpu.memory[0xccaa] = 0xee
-		cpu.Execute([]uint8{LDA, 0x01, TAY, LDA_IND_Y, 0xfd, BRK})
-		AssertRegisterA(t, &cpu, 0xee)
-	})
 }
 
 func TestTAX(t *testing.T) {
@@ -197,6 +131,76 @@ func TestINX(t *testing.T) {
 		AssertZero(t, &cpu, false)
 		AssertNegative(t, &cpu, true)
 	})
+}
+
+// Exercise sets of instructions that utilize various addressing modes
+func TestAddressingModeInstructionExecution(t *testing.T) {
+	t.Run("Zero Page", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0x0000] = 0xee
+		cpu.Execute([]uint8{LDA_ZERO, 0x00, BRK})
+		AssertRegisterA(t, &cpu, 0xee)
+	})
+
+	t.Run("Zero Page X", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0x00ff] = 0xee
+		// Load 0xfe into a, transfer to x, the load from (0xfe + 1) into a
+		cpu.Execute([]uint8{LDA, 0xfe, TAX, LDA_ZERO_X, 0x01, BRK})
+		AssertRegisterA(t, &cpu, 0xee)
+	})
+
+	t.Run("Zero Page X - Address Overflow", func(t *testing.T) {
+		// If the summed address overflows one byte, then it should wrap around.
+		// Ex: 0xff + 0x05 -> 0x04
+		cpu := Cpu{}
+		cpu.memory[0x0004] = 0xee
+		cpu.Execute([]uint8{LDA, 0xff, TAX, LDA_ZERO_X, 0x05, BRK})
+		AssertRegisterA(t, &cpu, 0xee)
+	})
+
+	t.Run("Absolute", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0xccaa] = 0xee
+		// Remember little-endian applies to the absolute address
+		cpu.Execute([]uint8{LDA_ABS, 0xaa, 0xcc, BRK})
+		AssertRegisterA(t, &cpu, 0xee)
+	})
+
+	t.Run("Absolute X", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0xccab] = 0xee
+		// Remember little-endian applies to the absolute address
+		cpu.Execute([]uint8{LDA, 0x01, TAX, LDA_ABS_X, 0xaa, 0xcc, BRK})
+		AssertRegisterA(t, &cpu, 0xee)
+	})
+
+	t.Run("Absolute Y", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0xccab] = 0xee
+		// Remember little-endian applies to the absolute address
+		cpu.Execute([]uint8{LDA, 0x01, TAY, LDA_ABS_Y, 0xaa, 0xcc, BRK})
+		AssertRegisterA(t, &cpu, 0xee)
+	})
+
+	t.Run("Indirect X", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0x00fe] = 0xaa
+		cpu.memory[0x00ff] = 0xcc
+		cpu.memory[0xccaa] = 0xee
+		cpu.Execute([]uint8{LDA, 0x01, TAX, LDA_IND_X, 0xfd, BRK})
+		AssertRegisterA(t, &cpu, 0xee)
+	})
+
+	t.Run("Indirect Y", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0x00fe] = 0xaa
+		cpu.memory[0x00ff] = 0xcc
+		cpu.memory[0xccaa] = 0xee
+		cpu.Execute([]uint8{LDA, 0x01, TAY, LDA_IND_Y, 0xfd, BRK})
+		AssertRegisterA(t, &cpu, 0xee)
+	})
+
 }
 
 func TestFiveInstructions(t *testing.T) {
