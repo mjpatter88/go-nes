@@ -83,7 +83,7 @@ func (c *Cpu) run() {
 		case "BRK":
 			c.Status.Break = true
 		default:
-			panic(fmt.Errorf("unsuppored opcode %#x", opcode))
+			panic(fmt.Errorf("unsuppored opcode %#x at pc: %#x", opcode, c.ProgramCounter))
 		}
 
 		for i := 0; i < instr.NumberOfBytes; i++ {
