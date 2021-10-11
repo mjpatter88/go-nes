@@ -10,7 +10,7 @@ func TestBRK(t *testing.T) {
 }
 
 func TestLDA(t *testing.T) {
-	t.Run("Immediate Mode", func(t *testing.T) {
+	t.Run("LDA", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.instrLDA(0x4a)
 
@@ -34,6 +34,15 @@ func TestLDA(t *testing.T) {
 		AssertRegisterA(t, &cpu, 0xf0)
 		AssertZero(t, &cpu, false)
 		AssertNegative(t, &cpu, true)
+	})
+
+	t.Run("LDA Instruction", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.Execute([]uint8{LDA, 0x0e, BRK})
+
+		AssertRegisterA(t, &cpu, 0x0e)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
 	})
 }
 
@@ -67,6 +76,15 @@ func TestTAX(t *testing.T) {
 		AssertZero(t, &cpu, false)
 		AssertNegative(t, &cpu, true)
 	})
+
+	t.Run("TAX Instruction", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.Execute([]uint8{LDA, 0x0e, TAX, BRK})
+
+		AssertRegisterX(t, &cpu, 0x0e)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+	})
 }
 
 func TestTAY(t *testing.T) {
@@ -99,6 +117,15 @@ func TestTAY(t *testing.T) {
 		AssertZero(t, &cpu, false)
 		AssertNegative(t, &cpu, true)
 	})
+
+	t.Run("TAY Instruction", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.Execute([]uint8{LDA, 0x0e, TAY, BRK})
+
+		AssertRegisterY(t, &cpu, 0x0e)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+	})
 }
 
 func TestINX(t *testing.T) {
@@ -130,6 +157,15 @@ func TestINX(t *testing.T) {
 		AssertRegisterX(t, &cpu, 0x80)
 		AssertZero(t, &cpu, false)
 		AssertNegative(t, &cpu, true)
+	})
+
+	t.Run("INX Instruction", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.Execute([]uint8{LDA, 0x0e, TAX, INX, BRK})
+
+		AssertRegisterX(t, &cpu, 0x0f)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
 	})
 }
 
@@ -210,45 +246,6 @@ func TestFiveInstructions(t *testing.T) {
 	AssertRegisterA(t, &cpu, 0xc0)
 	AssertRegisterX(t, &cpu, 0xc1)
 	AssertProgramCounter(t, &cpu, 0x8005)
-}
-
-func AssertBreak(t *testing.T, cpu *Cpu, status bool) {
-	if cpu.Status.Break != status {
-		t.Errorf("Expected Break status to be %t but was %t", status, cpu.Status.Break)
-	}
-}
-func AssertZero(t *testing.T, cpu *Cpu, status bool) {
-	if cpu.Status.Zero != status {
-		t.Errorf("Expected Zero status to be %t but was %t", status, cpu.Status.Zero)
-	}
-}
-func AssertNegative(t *testing.T, cpu *Cpu, status bool) {
-	if cpu.Status.Negative != status {
-		t.Errorf("Expected Negative status to be %t but was %t", status, cpu.Status.Negative)
-	}
-}
-func AssertRegisterA(t *testing.T, cpu *Cpu, value uint8) {
-	if cpu.RegA != value {
-		t.Errorf("Expected registerA to be %#x but was %#x", value, cpu.RegA)
-	}
-}
-
-func AssertRegisterX(t *testing.T, cpu *Cpu, value uint8) {
-	if cpu.RegX != value {
-		t.Errorf("Expected registerX to be %#x but was %#x", value, cpu.RegX)
-	}
-}
-
-func AssertRegisterY(t *testing.T, cpu *Cpu, value uint8) {
-	if cpu.RegY != value {
-		t.Errorf("Expected registerY to be %#x but was %#x", value, cpu.RegX)
-	}
-}
-
-func AssertProgramCounter(t *testing.T, cpu *Cpu, value uint16) {
-	if cpu.ProgramCounter != value {
-		t.Errorf("Expected ProgramCounter to be %#x but was %#x", value, cpu.ProgramCounter)
-	}
 }
 
 func TestLoad(t *testing.T) {
@@ -452,5 +449,51 @@ func TestIndirectYMode(t *testing.T) {
 
 	if value != 0xff {
 		t.Errorf("Expected %#x but got %#x", 0xff, value)
+	}
+}
+
+// Test helpers
+func AssertBreak(t *testing.T, cpu *Cpu, status bool) {
+	if cpu.Status.Break != status {
+		t.Errorf("Expected Break status to be %t but was %t", status, cpu.Status.Break)
+	}
+}
+func AssertZero(t *testing.T, cpu *Cpu, status bool) {
+	if cpu.Status.Zero != status {
+		t.Errorf("Expected Zero status to be %t but was %t", status, cpu.Status.Zero)
+	}
+}
+func AssertNegative(t *testing.T, cpu *Cpu, status bool) {
+	if cpu.Status.Negative != status {
+		t.Errorf("Expected Negative status to be %t but was %t", status, cpu.Status.Negative)
+	}
+}
+func AssertRegisterA(t *testing.T, cpu *Cpu, value uint8) {
+	if cpu.RegA != value {
+		t.Errorf("Expected registerA to be %#x but was %#x", value, cpu.RegA)
+	}
+}
+
+func AssertRegisterX(t *testing.T, cpu *Cpu, value uint8) {
+	if cpu.RegX != value {
+		t.Errorf("Expected registerX to be %#x but was %#x", value, cpu.RegX)
+	}
+}
+
+func AssertRegisterY(t *testing.T, cpu *Cpu, value uint8) {
+	if cpu.RegY != value {
+		t.Errorf("Expected registerY to be %#x but was %#x", value, cpu.RegX)
+	}
+}
+
+func AssertProgramCounter(t *testing.T, cpu *Cpu, value uint16) {
+	if cpu.ProgramCounter != value {
+		t.Errorf("Expected ProgramCounter to be %#x but was %#x", value, cpu.ProgramCounter)
+	}
+}
+
+func AssertMemoryValue(t *testing.T, cpu *Cpu, address uint16, value uint8) {
+	if cpu.memory[address] != value {
+		t.Errorf("Expected memory value at %#x to be %#x but was %#x", address, value, cpu.memory[address])
 	}
 }
