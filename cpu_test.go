@@ -348,21 +348,18 @@ func TestWriteMemory_u16(t *testing.T) {
 
 func TestImmediateMode(t *testing.T) {
 	cpu := Cpu{}
-	cpu.ProgramCounter = 0x02
+	cpu.ProgramCounter = 0x01
 	cpu.memory[0x02] = 0xff
 	value := cpu.ImmediateMode()
 
 	if value != 0xff {
 		t.Errorf("Expected %#x but got %#x", 0xff, value)
 	}
-	if cpu.ProgramCounter != 0x03 {
-		t.Errorf("Expected the program counter to have been incremented but it wasn't")
-	}
 }
 
 func TestZeroMode(t *testing.T) {
 	cpu := Cpu{}
-	cpu.ProgramCounter = 0x02
+	cpu.ProgramCounter = 0x01
 	cpu.memory[0x02] = 0x05
 	cpu.memory[0x05] = 0xff
 	value := cpu.ZeroMode()
@@ -370,14 +367,11 @@ func TestZeroMode(t *testing.T) {
 	if value != 0xff {
 		t.Errorf("Expected %#x but got %#x", 0xff, value)
 	}
-	if cpu.ProgramCounter != 0x03 {
-		t.Errorf("Expected the program counter to have been incremented but it wasn't")
-	}
 }
 
 func TestZeroXMode(t *testing.T) {
 	cpu := Cpu{}
-	cpu.ProgramCounter = 0x02
+	cpu.ProgramCounter = 0x01
 	cpu.RegX = 0x01
 	cpu.memory[0x02] = 0x05
 	cpu.memory[0x06] = 0xff
@@ -386,14 +380,11 @@ func TestZeroXMode(t *testing.T) {
 	if value != 0xff {
 		t.Errorf("Expected %#x but got %#x", 0xff, value)
 	}
-	if cpu.ProgramCounter != 0x03 {
-		t.Errorf("Expected the program counter to have been incremented but it wasn't")
-	}
 }
 
 func TestAbsoluteMode(t *testing.T) {
 	cpu := Cpu{}
-	cpu.ProgramCounter = 0x02
+	cpu.ProgramCounter = 0x01
 	cpu.memory[0x02] = 0x34
 	cpu.memory[0x03] = 0x12
 	cpu.memory[0x1234] = 0xab
@@ -402,14 +393,11 @@ func TestAbsoluteMode(t *testing.T) {
 	if value != 0xab {
 		t.Errorf("Expected %#x but got %#x", 0xab, value)
 	}
-	if cpu.ProgramCounter != 0x04 {
-		t.Errorf("Expected the program counter to have been incremented by two but it wasn't")
-	}
 }
 
 func TestAbsoluteXMode(t *testing.T) {
 	cpu := Cpu{}
-	cpu.ProgramCounter = 0x02
+	cpu.ProgramCounter = 0x01
 	cpu.RegX = 0x01
 	cpu.memory[0x02] = 0x34
 	cpu.memory[0x03] = 0x12
@@ -419,14 +407,11 @@ func TestAbsoluteXMode(t *testing.T) {
 	if value != 0xab {
 		t.Errorf("Expected %#x but got %#x", 0xab, value)
 	}
-	if cpu.ProgramCounter != 0x04 {
-		t.Errorf("Expected the program counter to have been incremented by two but it wasn't")
-	}
 }
 
 func TestAbsoluteYMode(t *testing.T) {
 	cpu := Cpu{}
-	cpu.ProgramCounter = 0x02
+	cpu.ProgramCounter = 0x01
 	cpu.RegY = 0x01
 	cpu.memory[0x02] = 0x34
 	cpu.memory[0x03] = 0x12
@@ -436,14 +421,11 @@ func TestAbsoluteYMode(t *testing.T) {
 	if value != 0xab {
 		t.Errorf("Expected %#x but got %#x", 0xab, value)
 	}
-	if cpu.ProgramCounter != 0x04 {
-		t.Errorf("Expected the program counter to have been incremented by two but it wasn't")
-	}
 }
 
 func TestIndirectXMode(t *testing.T) {
 	cpu := Cpu{}
-	cpu.ProgramCounter = 0x02
+	cpu.ProgramCounter = 0x01
 	cpu.RegX = 0x01
 	cpu.memory[0x02] = 0x34
 	cpu.memory[0x35] = 0xab
@@ -453,14 +435,11 @@ func TestIndirectXMode(t *testing.T) {
 	if value != 0xff {
 		t.Errorf("Expected %#x but got %#x", 0xff, value)
 	}
-	if cpu.ProgramCounter != 0x03 {
-		t.Errorf("Expected the program counter to have been incremented but it wasn't")
-	}
 }
 
 func TestIndirectYMode(t *testing.T) {
 	cpu := Cpu{}
-	cpu.ProgramCounter = 0x02
+	cpu.ProgramCounter = 0x01
 	cpu.RegY = 0x01
 	cpu.memory[0x02] = 0x34
 	cpu.memory[0x35] = 0xab
@@ -469,8 +448,5 @@ func TestIndirectYMode(t *testing.T) {
 
 	if value != 0xff {
 		t.Errorf("Expected %#x but got %#x", 0xff, value)
-	}
-	if cpu.ProgramCounter != 0x03 {
-		t.Errorf("Expected the program counter to have been incremented but it wasn't")
 	}
 }

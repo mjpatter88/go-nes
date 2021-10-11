@@ -2,22 +2,6 @@ package main
 
 import "fmt"
 
-// Opcodes
-const (
-	BRK        = 0x00
-	LDA        = 0xa9
-	LDA_ZERO   = 0xa5
-	LDA_ZERO_X = 0xb5
-	LDA_ABS    = 0xad
-	LDA_ABS_X  = 0xbd
-	LDA_ABS_Y  = 0xb9
-	LDA_IND_X  = 0xa1
-	LDA_IND_Y  = 0xb1
-	TAX        = 0xaa
-	TAY        = 0xa8
-	INX        = 0xe8
-)
-
 //Memory Addresses
 const (
 	PROG_MEM_ADDRESS           = 0x8000
@@ -51,42 +35,57 @@ func (c *Cpu) Execute(program []uint8) {
 }
 
 func (c *Cpu) run() {
-	for {
-		// TODO(mjpatter88): future refactor idea: first decode opcode into instr + mode.
-		// Then have two switch statements. First uses the addressing mode to calculate
-		// a "value". Second switches on the instruction and calls the
-		// corresponding instruction with the "value" calculated above.
-		opcode := c.readMemory(c.ProgramCounter)
-		c.ProgramCounter++
+	for !c.Status.Break {
 
-		switch opcode {
-		case LDA:
-			c.instrLDA(c.ImmediateMode())
-		case LDA_ZERO:
-			c.instrLDA(c.ZeroMode())
-		case LDA_ZERO_X:
-			c.instrLDA(c.ZeroXMode())
-		case LDA_ABS:
-			c.instrLDA(c.AbsoluteMode())
-		case LDA_ABS_X:
-			c.instrLDA(c.AbsoluteXMode())
-		case LDA_ABS_Y:
-			c.instrLDA(c.AbsoluteYMode())
-		case LDA_IND_X:
-			c.instrLDA(c.IndirectXMode())
-		case LDA_IND_Y:
-			c.instrLDA(c.IndirectYMode())
-		case TAX:
+		opcode := c.readMemory(c.ProgramCounter)
+		instr := Decode(opcode)
+
+		var value uint8
+
+		switch instr.AddressingMode {
+		case IMPLICIT:
+			value = 0
+		case ABSOLUTE:
+			value = c.AbsoluteMode()
+		case ABSOLUTE_X:
+			value = c.AbsoluteXMode()
+		case ABSOLUTE_Y:
+			value = c.AbsoluteYMode()
+		case ZERO:
+			value = c.ZeroMode()
+		case ZERO_X:
+			value = c.ZeroXMode()
+		case ZERO_Y:
+			panic(fmt.Errorf("unsuppored addressing mode %q", instr.AddressingMode))
+		case IMMEDIATE:
+			value = c.ImmediateMode()
+		case RELATIVE:
+			panic(fmt.Errorf("unsuppored addressing mode %q", instr.AddressingMode))
+		case INDIRECT:
+			panic(fmt.Errorf("unsuppored addressing mode %q", instr.AddressingMode))
+		case INDIRECT_X:
+			value = c.IndirectXMode()
+		case INDIRECT_Y:
+			value = c.IndirectYMode()
+		}
+
+		switch instr.Action {
+		case "LDA":
+			c.instrLDA(value)
+		case "TAX":
 			c.instrTAX()
-		case TAY:
+		case "TAY":
 			c.instrTAY()
-		case INX:
+		case "INX":
 			c.instrINX()
-		case BRK:
+		case "BRK":
 			c.Status.Break = true
-			return
 		default:
 			panic(fmt.Errorf("unsuppored opcode %#x", opcode))
+		}
+
+		for i := 0; i < instr.NumberOfBytes; i++ {
+			c.ProgramCounter++
 		}
 	}
 }
@@ -176,8 +175,7 @@ func (c *Cpu) ImmediateMode() uint8 {
 	// Use the program counter to return the value directly after the opcode.
 	//
 	// Incrememnts program counter by 1.
-	value := c.readMemory(c.ProgramCounter)
-	c.ProgramCounter++
+	value := c.readMemory(c.ProgramCounter + 1)
 	return value
 }
 
@@ -185,8 +183,7 @@ func (c *Cpu) ZeroMode() uint8 {
 	// Use the value stored directly after the opcode as an index into memory and return the value stored there.
 	//
 	// Incrememnts program counter by 1.
-	address := c.readMemory(c.ProgramCounter)
-	c.ProgramCounter++
+	address := c.readMemory(c.ProgramCounter + 1)
 	return c.readMemory(uint16(address))
 }
 
@@ -198,9 +195,8 @@ func (c *Cpu) ZeroXMode() uint8 {
 	// Incrememnts program counter by 1.
 
 	// Address is a byte and the overflow/wrap behavior is intentional.
-	address := c.readMemory(c.ProgramCounter)
+	address := c.readMemory(c.ProgramCounter + 1)
 	address += c.RegX
-	c.ProgramCounter++
 	return c.readMemory(uint16(address))
 }
 
@@ -210,8 +206,7 @@ func (c *Cpu) AbsoluteMode() uint8 {
 	//
 	// Incrememnts program counter by 2.
 
-	address := c.readMemory_u16(c.ProgramCounter)
-	c.ProgramCounter += 2
+	address := c.readMemory_u16(c.ProgramCounter + 1)
 	return c.readMemory(address)
 }
 
@@ -221,8 +216,7 @@ func (c *Cpu) AbsoluteXMode() uint8 {
 	//
 	// Incrememnts program counter by 2.
 
-	address := c.readMemory_u16(c.ProgramCounter)
-	c.ProgramCounter += 2
+	address := c.readMemory_u16(c.ProgramCounter + 1)
 	address += uint16(c.RegX)
 	return c.readMemory(uint16(address))
 }
@@ -233,8 +227,7 @@ func (c *Cpu) AbsoluteYMode() uint8 {
 	//
 	// Incrememnts program counter by 2.
 
-	address := c.readMemory_u16(c.ProgramCounter)
-	c.ProgramCounter += 2
+	address := c.readMemory_u16(c.ProgramCounter + 1)
 	address += uint16(c.RegY)
 	return c.readMemory(uint16(address))
 }
@@ -249,9 +242,8 @@ func (c *Cpu) IndirectXMode() uint8 {
 	// Incrememnts program counter by 1.
 
 	// Initial address is a byte and the overflow/wrap behavior is intentional.
-	index := c.readMemory(c.ProgramCounter)
+	index := c.readMemory(c.ProgramCounter + 1)
 	index += c.RegX
-	c.ProgramCounter++
 
 	// Use the initial address to read an address from memory.
 	// Address is two bytes little endian (LSB first)
@@ -265,9 +257,8 @@ func (c *Cpu) IndirectYMode() uint8 {
 	// Incrememnts program counter by 2.
 
 	// Initial address is a byte and the overflow/wrap behavior is intentional.
-	index := c.readMemory(c.ProgramCounter)
+	index := c.readMemory(c.ProgramCounter + 1)
 	index += c.RegY
-	c.ProgramCounter++
 
 	// Use the initial address to read an address from memory.
 	// Address is two bytes little endian (LSB first)
