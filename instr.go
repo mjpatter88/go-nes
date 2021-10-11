@@ -2,7 +2,8 @@ package main
 
 // Opcodes
 const (
-	BRK        = 0x00
+	BRK = 0x00
+
 	LDA        = 0xa9
 	LDA_ZERO   = 0xa5
 	LDA_ZERO_X = 0xb5
@@ -11,6 +12,14 @@ const (
 	LDA_ABS_Y  = 0xb9
 	LDA_IND_X  = 0xa1
 	LDA_IND_Y  = 0xb1
+
+	STA_ZERO   = 0x85
+	STA_ZERO_X = 0x95
+	STA_ABS    = 0x8d
+	STA_ABS_X  = 0x9d
+	STA_ABS_Y  = 0x99
+	STA_IND_X  = 0x81
+	STA_IND_Y  = 0x91
 
 	TAX = 0xaa
 	TAY = 0xa8
@@ -53,6 +62,13 @@ var instructionMap = map[uint8]Instruction{
 	0xb9: {"LDA", ABSOLUTE_Y, 3},
 	0xa1: {"LDA", INDIRECT_X, 2},
 	0xb1: {"LDA", INDIRECT_Y, 2},
+	0x85: {"STA", ZERO, 2},
+	0x95: {"STA", ZERO_X, 2},
+	0x8d: {"STA", ABSOLUTE, 3},
+	0x9d: {"STA", ABSOLUTE_X, 3},
+	0x99: {"STA", ABSOLUTE_Y, 3},
+	0x81: {"STA", INDIRECT_X, 2},
+	0x91: {"STA", INDIRECT_Y, 2},
 	0xaa: {"TAX", IMPLICIT, 1},
 	0xa8: {"TAY", IMPLICIT, 1},
 	0xe8: {"INX", IMPLICIT, 1},

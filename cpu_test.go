@@ -50,6 +50,24 @@ func TestLDA(t *testing.T) {
 	})
 }
 
+func TestSTA(t *testing.T) {
+	t.Run("STA", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegA = 0xff
+		cpu.instrSTA(0x01)
+
+		AssertMemoryValue(t, &cpu, 0x01, 0xff)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("STA Instruction", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.Execute([]uint8{LDA, 0xfe, STA_ZERO, 0x01, BRK})
+		AssertMemoryValue(t, &cpu, 0x01, 0xfe)
+	})
+}
+
 func TestTAX(t *testing.T) {
 	t.Run("TAX", func(t *testing.T) {
 		cpu := Cpu{}
