@@ -12,7 +12,8 @@ func TestBRK(t *testing.T) {
 func TestLDA(t *testing.T) {
 	t.Run("LDA", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.instrLDA(0x4a)
+		cpu.memory[0xaa] = 0x4a
+		cpu.instrLDA(0xaa)
 
 		AssertRegisterA(t, &cpu, 0x4a)
 		AssertZero(t, &cpu, false)
@@ -21,7 +22,8 @@ func TestLDA(t *testing.T) {
 
 	t.Run("Zero flag", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.instrLDA(0x00)
+		cpu.memory[0xaa] = 0x00
+		cpu.instrLDA(0xaa)
 
 		AssertRegisterA(t, &cpu, 0x00)
 		AssertZero(t, &cpu, true)
@@ -30,7 +32,9 @@ func TestLDA(t *testing.T) {
 
 	t.Run("Negative flag", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.instrLDA(0xf0)
+		cpu.memory[0xaa] = 0xf0
+		cpu.instrLDA(0xaa)
+
 		AssertRegisterA(t, &cpu, 0xf0)
 		AssertZero(t, &cpu, false)
 		AssertNegative(t, &cpu, true)
@@ -350,11 +354,10 @@ func TestWriteMemory_u16(t *testing.T) {
 func TestImmediateMode(t *testing.T) {
 	cpu := Cpu{}
 	cpu.ProgramCounter = 0x01
-	cpu.memory[0x02] = 0xff
 	value := cpu.ImmediateMode()
 
-	if value != 0xff {
-		t.Errorf("Expected %#x but got %#x", 0xff, value)
+	if value != 0x02 {
+		t.Errorf("Expected %#x but got %#x", 0x02, value)
 	}
 }
 
@@ -362,11 +365,10 @@ func TestZeroMode(t *testing.T) {
 	cpu := Cpu{}
 	cpu.ProgramCounter = 0x01
 	cpu.memory[0x02] = 0x05
-	cpu.memory[0x05] = 0xff
 	value := cpu.ZeroMode()
 
-	if value != 0xff {
-		t.Errorf("Expected %#x but got %#x", 0xff, value)
+	if value != 0x05 {
+		t.Errorf("Expected %#x but got %#x", 0x05, value)
 	}
 }
 
@@ -375,11 +377,10 @@ func TestZeroXMode(t *testing.T) {
 	cpu.ProgramCounter = 0x01
 	cpu.RegX = 0x01
 	cpu.memory[0x02] = 0x05
-	cpu.memory[0x06] = 0xff
 	value := cpu.ZeroXMode()
 
-	if value != 0xff {
-		t.Errorf("Expected %#x but got %#x", 0xff, value)
+	if value != 0x06 {
+		t.Errorf("Expected %#x but got %#x", 0x06, value)
 	}
 }
 
@@ -388,11 +389,10 @@ func TestAbsoluteMode(t *testing.T) {
 	cpu.ProgramCounter = 0x01
 	cpu.memory[0x02] = 0x34
 	cpu.memory[0x03] = 0x12
-	cpu.memory[0x1234] = 0xab
 	value := cpu.AbsoluteMode()
 
-	if value != 0xab {
-		t.Errorf("Expected %#x but got %#x", 0xab, value)
+	if value != 0x1234 {
+		t.Errorf("Expected %#x but got %#x", 0x1234, value)
 	}
 }
 
@@ -402,11 +402,10 @@ func TestAbsoluteXMode(t *testing.T) {
 	cpu.RegX = 0x01
 	cpu.memory[0x02] = 0x34
 	cpu.memory[0x03] = 0x12
-	cpu.memory[0x1235] = 0xab
 	value := cpu.AbsoluteXMode()
 
-	if value != 0xab {
-		t.Errorf("Expected %#x but got %#x", 0xab, value)
+	if value != 0x1235 {
+		t.Errorf("Expected %#x but got %#x", 0x1235, value)
 	}
 }
 
@@ -416,11 +415,10 @@ func TestAbsoluteYMode(t *testing.T) {
 	cpu.RegY = 0x01
 	cpu.memory[0x02] = 0x34
 	cpu.memory[0x03] = 0x12
-	cpu.memory[0x1235] = 0xab
 	value := cpu.AbsoluteYMode()
 
-	if value != 0xab {
-		t.Errorf("Expected %#x but got %#x", 0xab, value)
+	if value != 0x1235 {
+		t.Errorf("Expected %#x but got %#x", 0x1235, value)
 	}
 }
 
@@ -430,11 +428,10 @@ func TestIndirectXMode(t *testing.T) {
 	cpu.RegX = 0x01
 	cpu.memory[0x02] = 0x34
 	cpu.memory[0x35] = 0xab
-	cpu.memory[0xab] = 0xff
 	value := cpu.IndirectXMode()
 
-	if value != 0xff {
-		t.Errorf("Expected %#x but got %#x", 0xff, value)
+	if value != 0xab {
+		t.Errorf("Expected %#x but got %#x", 0xab, value)
 	}
 }
 
@@ -444,11 +441,10 @@ func TestIndirectYMode(t *testing.T) {
 	cpu.RegY = 0x01
 	cpu.memory[0x02] = 0x34
 	cpu.memory[0x35] = 0xab
-	cpu.memory[0xab] = 0xff
 	value := cpu.IndirectYMode()
 
-	if value != 0xff {
-		t.Errorf("Expected %#x but got %#x", 0xff, value)
+	if value != 0xab {
+		t.Errorf("Expected %#x but got %#x", 0xab, value)
 	}
 }
 

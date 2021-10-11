@@ -40,38 +40,38 @@ func (c *Cpu) run() {
 		opcode := c.readMemory(c.ProgramCounter)
 		instr := Decode(opcode)
 
-		var value uint8
+		var param uint16
 
 		switch instr.AddressingMode {
 		case IMPLICIT:
-			value = 0
+			param = 0
 		case ABSOLUTE:
-			value = c.AbsoluteMode()
+			param = c.AbsoluteMode()
 		case ABSOLUTE_X:
-			value = c.AbsoluteXMode()
+			param = c.AbsoluteXMode()
 		case ABSOLUTE_Y:
-			value = c.AbsoluteYMode()
+			param = c.AbsoluteYMode()
 		case ZERO:
-			value = c.ZeroMode()
+			param = c.ZeroMode()
 		case ZERO_X:
-			value = c.ZeroXMode()
+			param = c.ZeroXMode()
 		case ZERO_Y:
 			panic(fmt.Errorf("unsuppored addressing mode %q", instr.AddressingMode))
 		case IMMEDIATE:
-			value = c.ImmediateMode()
+			param = c.ImmediateMode()
 		case RELATIVE:
 			panic(fmt.Errorf("unsuppored addressing mode %q", instr.AddressingMode))
 		case INDIRECT:
 			panic(fmt.Errorf("unsuppored addressing mode %q", instr.AddressingMode))
 		case INDIRECT_X:
-			value = c.IndirectXMode()
+			param = c.IndirectXMode()
 		case INDIRECT_Y:
-			value = c.IndirectYMode()
+			param = c.IndirectYMode()
 		}
 
 		switch instr.Action {
 		case "LDA":
-			c.instrLDA(value)
+			c.instrLDA(param)
 		case "TAX":
 			c.instrTAX()
 		case "TAY":
@@ -150,8 +150,8 @@ func (c *Cpu) resetStatus() {
 	c.Status = StatusRegister{}
 }
 
-func (c *Cpu) instrLDA(param uint8) {
-	c.RegA = param
+func (c *Cpu) instrLDA(param uint16) {
+	c.RegA = c.readMemory(param)
 	c.updateFlags(c.RegA)
 }
 
@@ -171,75 +171,58 @@ func (c *Cpu) instrINX() {
 }
 
 // https://skilldrick.github.io/easy6502/#addressing
-func (c *Cpu) ImmediateMode() uint8 {
-	// Use the program counter to return the value directly after the opcode.
-	//
-	// Incrememnts program counter by 1.
-	value := c.readMemory(c.ProgramCounter + 1)
-	return value
+func (c *Cpu) ImmediateMode() uint16 {
+	// Return the address of the value directly after the opcode.
+	return c.ProgramCounter + 1
 }
 
-func (c *Cpu) ZeroMode() uint8 {
+func (c *Cpu) ZeroMode() uint16 {
 	// Use the value stored directly after the opcode as an index into memory and return the value stored there.
-	//
-	// Incrememnts program counter by 1.
 	address := c.readMemory(c.ProgramCounter + 1)
-	return c.readMemory(uint16(address))
+	return uint16(address)
 }
 
-func (c *Cpu) ZeroXMode() uint8 {
+func (c *Cpu) ZeroXMode() uint16 {
 	// Calculate a memory address by adding the value stored directly after the opcode
 	// add the value in the x register.
-	// Return the value stored at that address.
-	//
-	// Incrememnts program counter by 1.
 
 	// Address is a byte and the overflow/wrap behavior is intentional.
 	address := c.readMemory(c.ProgramCounter + 1)
 	address += c.RegX
-	return c.readMemory(uint16(address))
+	return uint16(address)
 }
 
-func (c *Cpu) AbsoluteMode() uint8 {
+func (c *Cpu) AbsoluteMode() uint16 {
 	// Use the two bytes stored directly after the opcode as an index into memory.
 	// Treat them as litte endian (LSB first).
-	//
-	// Incrememnts program counter by 2.
 
 	address := c.readMemory_u16(c.ProgramCounter + 1)
-	return c.readMemory(address)
+	return address
 }
 
-func (c *Cpu) AbsoluteXMode() uint8 {
+func (c *Cpu) AbsoluteXMode() uint16 {
 	// Same as AbsoluteMode but the value in the X register is added to
 	// the memory address.
-	//
-	// Incrememnts program counter by 2.
 
 	address := c.readMemory_u16(c.ProgramCounter + 1)
 	address += uint16(c.RegX)
-	return c.readMemory(uint16(address))
+	return address
 }
 
-func (c *Cpu) AbsoluteYMode() uint8 {
+func (c *Cpu) AbsoluteYMode() uint16 {
 	// Same as AbsoluteMode but the value in the Y register is added to
 	// the memory address.
-	//
-	// Incrememnts program counter by 2.
 
 	address := c.readMemory_u16(c.ProgramCounter + 1)
 	address += uint16(c.RegY)
-	return c.readMemory(uint16(address))
+	return address
 }
 
-func (c *Cpu) IndirectXMode() uint8 {
+func (c *Cpu) IndirectXMode() uint16 {
 	// Use the two bytes stored directly after the opcode as an index into memory.
 	// Treat them as litte endian (LSB first). Add the value in the X register.
 	// Use this sum as an initial index. Lookup the value stored in memory at
-	// this index and then use that value as another index.
-	// Return the value stored in memory at that second index.
-	//
-	// Incrememnts program counter by 1.
+	// this index and return it.
 
 	// Initial address is a byte and the overflow/wrap behavior is intentional.
 	index := c.readMemory(c.ProgramCounter + 1)
@@ -248,13 +231,11 @@ func (c *Cpu) IndirectXMode() uint8 {
 	// Use the initial address to read an address from memory.
 	// Address is two bytes little endian (LSB first)
 	address := c.readMemory_u16(uint16(index))
-	return c.readMemory(address)
+	return address
 }
 
-func (c *Cpu) IndirectYMode() uint8 {
+func (c *Cpu) IndirectYMode() uint16 {
 	// Same as IndirectXMode but with the Y register.
-	//
-	// Incrememnts program counter by 2.
 
 	// Initial address is a byte and the overflow/wrap behavior is intentional.
 	index := c.readMemory(c.ProgramCounter + 1)
@@ -263,5 +244,5 @@ func (c *Cpu) IndirectYMode() uint8 {
 	// Use the initial address to read an address from memory.
 	// Address is two bytes little endian (LSB first)
 	address := c.readMemory_u16(uint16(index))
-	return c.readMemory(address)
+	return address
 }
