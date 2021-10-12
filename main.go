@@ -7,6 +7,9 @@ func main() {
 	cpu.PrintState()
 }
 
+// TODO: In order to work, this needs to be loaded at 0x600 rather than the "normal" 0x8000.
+// Understand why. See: https://github.com/bugzmanov/nes_ebook/blob/master/code/ch3.4/src/cpu.rs#L244-L258
+
 // Example tetris game from: https://bugzmanov.github.io/nes_ebook/chapter_3_4.html
 var instr = []uint8{
 	0x20, 0x06, 0x06, 0x20, 0x38, 0x06, 0x20, 0x0d, 0x06, 0x20, 0x2a, 0x06, 0x60, 0xa9, 0x02, 0x85,

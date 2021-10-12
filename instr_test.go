@@ -139,6 +139,13 @@ func TestDecode_INX(t *testing.T) {
 	AssertNumberOfBytes(t, instr, 1)
 }
 
+func TestDecode_JSR(t *testing.T) {
+	instr := Decode(0x20)
+	AssertAction(t, instr, "JSR")
+	AssertAddressingMode(t, instr, ABSOLUTE)
+	AssertNumberOfBytes(t, instr, 3)
+}
+
 func AssertAction(t *testing.T, instr Instruction, action string) {
 	if instr.Action != action {
 		t.Errorf("Expected Action to be %s but was %s", action, instr.Action)

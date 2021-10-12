@@ -191,6 +191,21 @@ func TestINX(t *testing.T) {
 	})
 }
 
+func TestJSR(t *testing.T) {
+	cpu := Cpu{}
+	cpu.ProgramCounter = 0x8000
+	cpu.StackPointer = 0x00ff
+	cpu.instrJSR(0x9000)
+
+	AssertProgramCounter(t, &cpu, 0x9000)
+	// 0x8000 + 3 (len of current instr) - 1 => 0x8002
+	// MSB goes onto stack first then LSB second
+	AssertMemoryValue(t, &cpu, 0x01ff, 0x80)
+	AssertMemoryValue(t, &cpu, 0x01fe, 0x02)
+
+	AssertStackPointer(t, &cpu, 0x00fd)
+}
+
 // Exercise sets of instructions that utilize various addressing modes
 func TestAddressingModeInstructionExecution(t *testing.T) {
 	t.Run("Zero Page", func(t *testing.T) {
@@ -258,7 +273,17 @@ func TestAddressingModeInstructionExecution(t *testing.T) {
 		cpu.Execute([]uint8{LDA, 0x01, TAY, LDA_IND_Y, 0xfd, BRK})
 		AssertRegisterA(t, &cpu, 0xee)
 	})
+}
 
+// Excercise sets of jumping instructions to test overall behavior
+func TestJumpingInstructionExecution(t *testing.T) {
+	t.Run("JSR", func(t *testing.T) {
+		cpu := Cpu{}
+		// Jump to the INX instruction
+		cpu.Execute([]uint8{JSR, 0x05, 0x80, LDA, 0x05, INX, BRK})
+		AssertRegisterA(t, &cpu, 0x00)
+		AssertRegisterX(t, &cpu, 0x01)
+	})
 }
 
 func TestFiveInstructions(t *testing.T) {
@@ -309,6 +334,7 @@ func TestReset(t *testing.T) {
 	AssertRegisterX(t, &cpu, 0)
 	AssertRegisterA(t, &cpu, 0)
 	AssertProgramCounter(t, &cpu, 0x1234)
+	AssertStackPointer(t, &cpu, 0xff)
 }
 
 func TestReadMemory(t *testing.T) {
@@ -509,5 +535,11 @@ func AssertProgramCounter(t *testing.T, cpu *Cpu, value uint16) {
 func AssertMemoryValue(t *testing.T, cpu *Cpu, address uint16, value uint8) {
 	if cpu.memory[address] != value {
 		t.Errorf("Expected memory value at %#x to be %#x but was %#x", address, value, cpu.memory[address])
+	}
+}
+
+func AssertStackPointer(t *testing.T, cpu *Cpu, value uint8) {
+	if cpu.StackPointer != value {
+		t.Errorf("Expected stack pointer to be %#x but was %#x", value, cpu.StackPointer)
 	}
 }

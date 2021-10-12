@@ -26,6 +26,7 @@ type Cpu struct {
 	Status         StatusRegister
 	ProgramCounter uint16
 	memory         [0xffff]uint8
+	StackPointer   uint8
 }
 
 func (c *Cpu) Execute(program []uint8) {
@@ -35,11 +36,13 @@ func (c *Cpu) Execute(program []uint8) {
 }
 
 func (c *Cpu) run() {
+
 	for !c.Status.Break {
 
 		opcode := c.readMemory(c.ProgramCounter)
 		instr := Decode(opcode)
 
+		didJump := false
 		var param uint16
 
 		switch instr.AddressingMode {
@@ -80,14 +83,20 @@ func (c *Cpu) run() {
 			c.instrTAY()
 		case "INX":
 			c.instrINX()
+		case "JSR":
+			c.instrJSR(param)
+			didJump = true
 		case "BRK":
 			c.Status.Break = true
 		default:
 			panic(fmt.Errorf("unsuppored opcode %#x at pc: %#x", opcode, c.ProgramCounter))
 		}
 
-		for i := 0; i < instr.NumberOfBytes; i++ {
-			c.ProgramCounter++
+		// Jump instructions are expected to manually update the program counter themselves
+		if !didJump {
+			for i := 0; i < instr.NumberOfBytes; i++ {
+				c.ProgramCounter++
+			}
 		}
 	}
 }
@@ -116,6 +125,7 @@ func (c *Cpu) reset() {
 	c.RegA = 0
 	c.RegX = 0
 	c.ProgramCounter = c.readMemory_u16(PROG_REFERENCE_MEM_ADDRESS)
+	c.StackPointer = 0xff
 }
 
 func (c *Cpu) readMemory(index uint16) uint8 {
@@ -175,6 +185,17 @@ func (c *Cpu) instrTAY() {
 func (c *Cpu) instrINX() {
 	c.RegX++
 	c.updateFlags(c.RegX)
+}
+
+func (c *Cpu) instrJSR(param uint16) {
+	// We'll write the two bytes at once, so write it to SP - 1 (ends up writing to SP-1 and SP)
+	index := 0x0100 | uint16((c.StackPointer - 1))
+	// JSR length is 3 and we want to store the address of the next insturction - 1.
+	value := c.ProgramCounter + 3 - 1
+	c.writeMemory_u16(index, value)
+
+	c.StackPointer -= 2
+	c.ProgramCounter = param
 }
 
 // https://skilldrick.github.io/easy6502/#addressing
@@ -253,3 +274,10 @@ func (c *Cpu) IndirectYMode() uint16 {
 	address := c.readMemory_u16(uint16(index))
 	return address
 }
+
+// https://skilldrick.github.io/easy6502/#stack
+// Stack is 0x0100 to 0x01ff in memory.
+// Stack pointer starts at 0xff refers to 0x01ff in memory.
+// It grows downwards, so when a byte is added the next SP value is 0xfe.
+// When adding addresses (such as JSR) the MSB is added first: 0x8000 -> 0x80 then 0x00
+// TODO(mjpatter88): refactor stack management into helpers.
