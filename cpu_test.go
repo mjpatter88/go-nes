@@ -1,6 +1,8 @@
 package main
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestBRK(t *testing.T) {
 	cpu := Cpu{}
@@ -282,6 +284,15 @@ func TestJumpingInstructionExecution(t *testing.T) {
 		// Jump to the INX instruction
 		cpu.Execute([]uint8{JSR, 0x05, 0x80, LDA, 0x05, INX, BRK})
 		AssertRegisterA(t, &cpu, 0x00)
+		AssertRegisterX(t, &cpu, 0x01)
+	})
+
+	t.Run("JSR and RTS", func(t *testing.T) {
+		cpu := Cpu{}
+		// Jump to the INX instruction and then return.
+		// Expect one INX to run and the LDA instr to run but nothing else.
+		cpu.Execute([]uint8{JSR, 0x06, 0x80, LDA, 0x05, BRK, INX, RTS, INX, BRK})
+		AssertRegisterA(t, &cpu, 0x05)
 		AssertRegisterX(t, &cpu, 0x01)
 	})
 }

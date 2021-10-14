@@ -146,6 +146,13 @@ func TestDecode_JSR(t *testing.T) {
 	AssertNumberOfBytes(t, instr, 3)
 }
 
+func TestDecode_RTS(t *testing.T) {
+	instr := Decode(0x60)
+	AssertAction(t, instr, "RTS")
+	AssertAddressingMode(t, instr, IMPLICIT)
+	AssertNumberOfBytes(t, instr, 1)
+}
+
 func AssertAction(t *testing.T, instr Instruction, action string) {
 	if instr.Action != action {
 		t.Errorf("Expected Action to be %s but was %s", action, instr.Action)

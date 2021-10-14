@@ -4,6 +4,7 @@ package main
 const (
 	BRK = 0x00
 	JSR = 0x20
+	RTS = 0x60
 
 	LDA        = 0xa9
 	LDA_ZERO   = 0xa5
@@ -56,6 +57,7 @@ func Decode(opcode uint8) Instruction {
 var instructionMap = map[uint8]Instruction{
 	0x00: {"BRK", IMPLICIT, 1},
 	0x20: {"JSR", ABSOLUTE, 3},
+	0x60: {"RTS", IMPLICIT, 1},
 	0xa9: {"LDA", IMMEDIATE, 2},
 	0xa5: {"LDA", ZERO, 2},
 	0xb5: {"LDA", ZERO_X, 2},

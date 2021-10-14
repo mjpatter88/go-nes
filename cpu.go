@@ -4,6 +4,7 @@ import "fmt"
 
 //Memory Addresses
 const (
+	// PROG_MEM_ADDRESS           = 0x600
 	PROG_MEM_ADDRESS           = 0x8000
 	PROG_REFERENCE_MEM_ADDRESS = 0xfffc
 )
@@ -85,6 +86,9 @@ func (c *Cpu) run() {
 			c.instrINX()
 		case "JSR":
 			c.instrJSR(param)
+			didJump = true
+		case "RTS":
+			c.instrRTS(param)
 			didJump = true
 		case "BRK":
 			c.Status.Break = true
@@ -196,6 +200,14 @@ func (c *Cpu) instrJSR(param uint16) {
 
 	c.StackPointer -= 2
 	c.ProgramCounter = param
+}
+
+func (c *Cpu) instrRTS(param uint16) {
+	// Read two bytes from the top of the stack.
+	index := 0x0100 | uint16((c.StackPointer + 1))
+	value := c.readMemory_u16(index)
+	c.StackPointer += 2
+	c.ProgramCounter = value + 1
 }
 
 // https://skilldrick.github.io/easy6502/#addressing
