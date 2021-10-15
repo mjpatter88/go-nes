@@ -76,6 +76,8 @@ func (c *Cpu) run() {
 		switch instr.Action {
 		case "LDA":
 			c.instrLDA(param)
+		case "AND":
+			c.instrAND(param)
 		case "STA":
 			c.instrSTA(param)
 		case "TAX":
@@ -168,6 +170,12 @@ func (c *Cpu) resetStatus() {
 
 func (c *Cpu) instrLDA(param uint16) {
 	c.RegA = c.readMemory(param)
+	c.updateFlags(c.RegA)
+}
+
+func (c *Cpu) instrAND(param uint16) {
+	value := c.readMemory(param)
+	c.RegA &= value
 	c.updateFlags(c.RegA)
 }
 

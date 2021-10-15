@@ -52,6 +52,50 @@ func TestLDA(t *testing.T) {
 	})
 }
 
+func TestAND(t *testing.T) {
+	t.Run("AND", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegA = 0x0f
+		cpu.memory[0xaa] = 0xff
+		cpu.instrAND(0xaa)
+
+		AssertRegisterA(t, &cpu, 0x0f)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("Zero flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegA = 0x0f
+		cpu.memory[0xaa] = 0x00
+		cpu.instrAND(0xaa)
+
+		AssertRegisterA(t, &cpu, 0x00)
+		AssertZero(t, &cpu, true)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("Negative flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegA = 0xff
+		cpu.memory[0xaa] = 0xff
+		cpu.instrAND(0xaa)
+
+		AssertRegisterA(t, &cpu, 0xff)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, true)
+	})
+
+	t.Run("AND Instruction", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.Execute([]uint8{LDA, 0xf0, AND, 0xff, BRK})
+
+		AssertRegisterA(t, &cpu, 0xf0)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, true)
+	})
+}
+
 func TestSTA(t *testing.T) {
 	t.Run("STA", func(t *testing.T) {
 		cpu := Cpu{}

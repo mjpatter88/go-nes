@@ -67,6 +67,64 @@ func TestDecodeLDA(t *testing.T) {
 	})
 }
 
+func TestDecodeAND(t *testing.T) {
+	t.Run("AND", func(t *testing.T) {
+		instr := Decode(0x29)
+		AssertAction(t, instr, "AND")
+		AssertAddressingMode(t, instr, IMMEDIATE)
+		AssertNumberOfBytes(t, instr, 2)
+	})
+
+	t.Run("Zero", func(t *testing.T) {
+		instr := Decode(0x25)
+		AssertAction(t, instr, "AND")
+		AssertAddressingMode(t, instr, ZERO)
+		AssertNumberOfBytes(t, instr, 2)
+	})
+
+	t.Run("Zero X", func(t *testing.T) {
+		instr := Decode(0x35)
+		AssertAction(t, instr, "AND")
+		AssertAddressingMode(t, instr, ZERO_X)
+		AssertNumberOfBytes(t, instr, 2)
+	})
+
+	t.Run("ABSOLUTE", func(t *testing.T) {
+		instr := Decode(0x2d)
+		AssertAction(t, instr, "AND")
+		AssertAddressingMode(t, instr, ABSOLUTE)
+		AssertNumberOfBytes(t, instr, 3)
+	})
+
+	t.Run("ABSOLUTE X", func(t *testing.T) {
+		instr := Decode(0x3d)
+		AssertAction(t, instr, "AND")
+		AssertAddressingMode(t, instr, ABSOLUTE_X)
+		AssertNumberOfBytes(t, instr, 3)
+	})
+
+	t.Run("ABSOLUTE Y", func(t *testing.T) {
+		instr := Decode(0x39)
+		AssertAction(t, instr, "AND")
+		AssertAddressingMode(t, instr, ABSOLUTE_Y)
+		AssertNumberOfBytes(t, instr, 3)
+	})
+
+	t.Run("INDIRECT X", func(t *testing.T) {
+		instr := Decode(0x21)
+		AssertAction(t, instr, "AND")
+		AssertAddressingMode(t, instr, INDIRECT_X)
+		AssertNumberOfBytes(t, instr, 2)
+	})
+
+	t.Run("INDIRECT Y", func(t *testing.T) {
+		instr := Decode(0x31)
+		AssertAction(t, instr, "AND")
+		AssertAddressingMode(t, instr, INDIRECT_Y)
+		AssertNumberOfBytes(t, instr, 2)
+	})
+}
+
 func TestDecodeSTA(t *testing.T) {
 	t.Run("Zero", func(t *testing.T) {
 		instr := Decode(0x85)
