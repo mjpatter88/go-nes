@@ -4,8 +4,7 @@ import "fmt"
 
 //Memory Addresses
 const (
-	// PROG_MEM_ADDRESS           = 0x600
-	PROG_MEM_ADDRESS           = 0x8000
+	DEFAULT_PROG_MEM_ADDRESS   = 0x8000
 	PROG_REFERENCE_MEM_ADDRESS = 0xfffc
 )
 
@@ -31,7 +30,12 @@ type Cpu struct {
 }
 
 func (c *Cpu) Execute(program []uint8) {
-	c.load(program)
+	c.ExecuteAtAddress(program, DEFAULT_PROG_MEM_ADDRESS)
+}
+
+// Loads the program into memory  at the specified address and executes it
+func (c *Cpu) ExecuteAtAddress(program []uint8, address uint16) {
+	c.load(program, address)
 	c.reset()
 	c.run()
 }
@@ -113,16 +117,14 @@ func (c *Cpu) PrintState() {
 	fmt.Printf("Register X: %#x\n", c.RegX)
 }
 
-func (c *Cpu) load(program []uint8) {
+func (c *Cpu) load(program []uint8, address uint16) {
 	for index, byte := range program {
-		memIndex := PROG_MEM_ADDRESS + index
+		memIndex := address + uint16(index)
 		c.memory[memIndex] = byte
 	}
 	// nes spec says to write program memory address into mem address 0xFFFC
 	// this value is then read into the program counter on system reset
-	// NOTE: presumably the program could be loaded into memory at a different address
-	// otherwise this additional level of indirection seems pointless. (?)
-	c.writeMemory_u16(PROG_REFERENCE_MEM_ADDRESS, PROG_MEM_ADDRESS)
+	c.writeMemory_u16(PROG_REFERENCE_MEM_ADDRESS, address)
 	c.ProgramCounter = 0x8000
 }
 

@@ -354,10 +354,11 @@ func TestLoad(t *testing.T) {
 	t.Run("Load Program", func(t *testing.T) {
 		cpu := Cpu{}
 		programBytes := []uint8{0x01, 0x02, 0x03}
-		cpu.load(programBytes)
+		var startingAddress uint16 = 0x8000
+		cpu.load(programBytes, startingAddress)
 
 		for i := 0; i < 3; i++ {
-			memAddress := 0x8000 + i
+			memAddress := startingAddress + uint16(i)
 			if cpu.memory[memAddress] != uint8(i+1) {
 				t.Errorf("Expected memory[%#x] to be %#x but was %#x", memAddress, i, cpu.memory[memAddress])
 			}
@@ -366,7 +367,7 @@ func TestLoad(t *testing.T) {
 	t.Run("Sets Program Reference in Memory", func(t *testing.T) {
 		cpu := Cpu{}
 		programBytes := []uint8{0x01, 0x02, 0x03}
-		cpu.load(programBytes)
+		cpu.load(programBytes, 0x08000)
 
 		value := cpu.readMemory_u16(0xfffc)
 		if value != 0x8000 {

@@ -1,14 +1,15 @@
 package main
 
+// In order to work, this needs to be loaded at 0x600 rather than the "normal" 0x8000.
+// See: https://github.com/bugzmanov/nes_ebook/blob/master/code/ch3.4/src/cpu.rs#L244-L258
+const MEM_ADDRESS = 0x600
+
 // a9 c0 aa e8 00
 func main() {
 	cpu := Cpu{}
-	cpu.Execute(instr)
+	cpu.ExecuteAtAddress(instr, MEM_ADDRESS)
 	cpu.PrintState()
 }
-
-// TODO: In order to work, this needs to be loaded at 0x600 rather than the "normal" 0x8000.
-// Understand why. See: https://github.com/bugzmanov/nes_ebook/blob/master/code/ch3.4/src/cpu.rs#L244-L258
 
 // Example tetris game from: https://bugzmanov.github.io/nes_ebook/chapter_3_4.html
 var instr = []uint8{
