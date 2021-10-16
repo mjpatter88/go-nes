@@ -96,6 +96,8 @@ func (c *Cpu) run() {
 		case "RTS":
 			c.instrRTS(param)
 			didJump = true
+		case "CLC":
+			c.instrCLC()
 		case "BRK":
 			c.Status.Break = true
 		default:
@@ -199,6 +201,10 @@ func (c *Cpu) instrTAY() {
 func (c *Cpu) instrINX() {
 	c.RegX++
 	c.updateFlags(c.RegX)
+}
+
+func (c *Cpu) instrCLC() {
+	c.Status.Carry = false
 }
 
 func (c *Cpu) instrJSR(param uint16) {

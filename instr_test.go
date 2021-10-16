@@ -197,6 +197,13 @@ func TestDecode_INX(t *testing.T) {
 	AssertNumberOfBytes(t, instr, 1)
 }
 
+func TestDecode_CLC(t *testing.T) {
+	instr := Decode(0x18)
+	AssertAction(t, instr, "CLC")
+	AssertAddressingMode(t, instr, IMPLICIT)
+	AssertNumberOfBytes(t, instr, 1)
+}
+
 func TestDecode_JSR(t *testing.T) {
 	instr := Decode(0x20)
 	AssertAction(t, instr, "JSR")

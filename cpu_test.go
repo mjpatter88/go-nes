@@ -237,6 +237,22 @@ func TestINX(t *testing.T) {
 	})
 }
 
+func TestCLC(t *testing.T) {
+	t.Run("CLC", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.Status.Carry = true
+		cpu.instrCLC()
+
+		AssertCarry(t, &cpu, false)
+	})
+
+	t.Run("CLC Instruction", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.Execute([]uint8{CLC, BRK})
+		AssertCarry(t, &cpu, false)
+	})
+}
+
 func TestJSR(t *testing.T) {
 	cpu := Cpu{}
 	cpu.ProgramCounter = 0x8000
@@ -557,6 +573,11 @@ func AssertBreak(t *testing.T, cpu *Cpu, status bool) {
 func AssertZero(t *testing.T, cpu *Cpu, status bool) {
 	if cpu.Status.Zero != status {
 		t.Errorf("Expected Zero status to be %t but was %t", status, cpu.Status.Zero)
+	}
+}
+func AssertCarry(t *testing.T, cpu *Cpu, status bool) {
+	if cpu.Status.Carry != status {
+		t.Errorf("Expected Carry status to be %t but was %t", status, cpu.Status.Carry)
 	}
 }
 func AssertNegative(t *testing.T, cpu *Cpu, status bool) {
