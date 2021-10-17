@@ -96,6 +96,61 @@ func TestAND(t *testing.T) {
 	})
 }
 
+func TestADC(t *testing.T) {
+	t.Run("ADC", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegA = 0x02
+		cpu.memory[0xaa] = 0x31
+		cpu.instrADC(0xaa)
+
+		AssertRegisterA(t, &cpu, 0x33)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+		AssertOverflow(t, &cpu, false)
+		AssertCarry(t, &cpu, false)
+	})
+
+	t.Run("Zero flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegA = 0x00
+		cpu.memory[0xaa] = 0x00
+		cpu.instrADC(0xaa)
+
+		AssertRegisterA(t, &cpu, 0x00)
+		AssertZero(t, &cpu, true)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("Negative flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegA = 0xfa
+		cpu.memory[0xaa] = 0x01
+		cpu.instrADC(0xaa)
+
+		AssertRegisterA(t, &cpu, 0xfb)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, true)
+	})
+
+	t.Run("Overflow", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegA = 0xff
+		cpu.memory[0xaa] = 0x01
+		cpu.instrADC(0xaa)
+
+		AssertRegisterA(t, &cpu, 0x00)
+		AssertZero(t, &cpu, true)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("ADC Instruction", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.Execute([]uint8{LDA, 0xf0, ADC, 0x1, BRK})
+
+		AssertRegisterA(t, &cpu, 0xf1)
+	})
+}
+
 func TestSTA(t *testing.T) {
 	t.Run("STA", func(t *testing.T) {
 		cpu := Cpu{}
@@ -585,6 +640,13 @@ func AssertNegative(t *testing.T, cpu *Cpu, status bool) {
 		t.Errorf("Expected Negative status to be %t but was %t", status, cpu.Status.Negative)
 	}
 }
+
+func AssertOverflow(t *testing.T, cpu *Cpu, status bool) {
+	if cpu.Status.Overflow != status {
+		t.Errorf("Expected Overflow status to be %t but was %t", status, cpu.Status.Overflow)
+	}
+}
+
 func AssertRegisterA(t *testing.T, cpu *Cpu, value uint8) {
 	if cpu.RegA != value {
 		t.Errorf("Expected registerA to be %#x but was %#x", value, cpu.RegA)

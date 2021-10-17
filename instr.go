@@ -25,6 +25,15 @@ const (
 	AND_IND_X  = 0x21
 	AND_IND_Y  = 0x31
 
+	ADC        = 0x69
+	ADC_ZERO   = 0x65
+	ADC_ZERO_X = 0x75
+	ADC_ABS    = 0x6d
+	ADC_ABS_X  = 0x7d
+	ADC_ABS_Y  = 0x79
+	ADC_IND_X  = 0x61
+	ADC_IND_Y  = 0x71
+
 	STA_ZERO   = 0x85
 	STA_ZERO_X = 0x95
 	STA_ABS    = 0x8d
@@ -85,6 +94,14 @@ var instructionMap = map[uint8]Instruction{
 	0x39: {"AND", ABSOLUTE_Y, 3},
 	0x21: {"AND", INDIRECT_X, 2},
 	0x31: {"AND", INDIRECT_Y, 2},
+	0x69: {"ADC", IMMEDIATE, 2},
+	0x65: {"ADC", ZERO, 2},
+	0x75: {"ADC", ZERO_X, 2},
+	0x6d: {"ADC", ABSOLUTE, 3},
+	0x7d: {"ADC", ABSOLUTE_X, 3},
+	0x79: {"ADC", ABSOLUTE_Y, 3},
+	0x61: {"ADC", INDIRECT_X, 2},
+	0x71: {"ADC", INDIRECT_Y, 2},
 	0x85: {"STA", ZERO, 2},
 	0x95: {"STA", ZERO_X, 2},
 	0x8d: {"STA", ABSOLUTE, 3},
