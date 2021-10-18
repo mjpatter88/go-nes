@@ -67,6 +67,80 @@ func TestDecodeLDA(t *testing.T) {
 	})
 }
 
+func TestDecodeLDX(t *testing.T) {
+	t.Run("LDX", func(t *testing.T) {
+		instr := Decode(0xa2)
+		AssertAction(t, instr, "LDX")
+		AssertAddressingMode(t, instr, IMMEDIATE)
+		AssertNumberOfBytes(t, instr, 2)
+	})
+
+	t.Run("Zero", func(t *testing.T) {
+		instr := Decode(0xa6)
+		AssertAction(t, instr, "LDX")
+		AssertAddressingMode(t, instr, ZERO)
+		AssertNumberOfBytes(t, instr, 2)
+	})
+
+	t.Run("Zero Y", func(t *testing.T) {
+		instr := Decode(0xb6)
+		AssertAction(t, instr, "LDX")
+		AssertAddressingMode(t, instr, ZERO_Y)
+		AssertNumberOfBytes(t, instr, 2)
+	})
+
+	t.Run("ABSOLUTE", func(t *testing.T) {
+		instr := Decode(0xae)
+		AssertAction(t, instr, "LDX")
+		AssertAddressingMode(t, instr, ABSOLUTE)
+		AssertNumberOfBytes(t, instr, 3)
+	})
+
+	t.Run("ABSOLUTE Y", func(t *testing.T) {
+		instr := Decode(0xbe)
+		AssertAction(t, instr, "LDX")
+		AssertAddressingMode(t, instr, ABSOLUTE_Y)
+		AssertNumberOfBytes(t, instr, 3)
+	})
+}
+
+func TestDecodeLDY(t *testing.T) {
+	t.Run("LDY", func(t *testing.T) {
+		instr := Decode(0xa0)
+		AssertAction(t, instr, "LDY")
+		AssertAddressingMode(t, instr, IMMEDIATE)
+		AssertNumberOfBytes(t, instr, 2)
+	})
+
+	t.Run("Zero", func(t *testing.T) {
+		instr := Decode(0xa4)
+		AssertAction(t, instr, "LDY")
+		AssertAddressingMode(t, instr, ZERO)
+		AssertNumberOfBytes(t, instr, 2)
+	})
+
+	t.Run("Zero X", func(t *testing.T) {
+		instr := Decode(0xb4)
+		AssertAction(t, instr, "LDY")
+		AssertAddressingMode(t, instr, ZERO_X)
+		AssertNumberOfBytes(t, instr, 2)
+	})
+
+	t.Run("ABSOLUTE", func(t *testing.T) {
+		instr := Decode(0xac)
+		AssertAction(t, instr, "LDY")
+		AssertAddressingMode(t, instr, ABSOLUTE)
+		AssertNumberOfBytes(t, instr, 3)
+	})
+
+	t.Run("ABSOLUTE X", func(t *testing.T) {
+		instr := Decode(0xbc)
+		AssertAction(t, instr, "LDY")
+		AssertAddressingMode(t, instr, ABSOLUTE_X)
+		AssertNumberOfBytes(t, instr, 3)
+	})
+}
+
 func TestDecodeAND(t *testing.T) {
 	t.Run("AND", func(t *testing.T) {
 		instr := Decode(0x29)

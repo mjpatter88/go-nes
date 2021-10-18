@@ -52,6 +52,88 @@ func TestLDA(t *testing.T) {
 	})
 }
 
+func TestLDX(t *testing.T) {
+	t.Run("LDX", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0xaa] = 0x4a
+		cpu.instrLDX(0xaa)
+
+		AssertRegisterX(t, &cpu, 0x4a)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("Zero flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0xaa] = 0x00
+		cpu.instrLDX(0xaa)
+
+		AssertRegisterX(t, &cpu, 0x00)
+		AssertZero(t, &cpu, true)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("Negative flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0xaa] = 0xf0
+		cpu.instrLDX(0xaa)
+
+		AssertRegisterX(t, &cpu, 0xf0)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, true)
+	})
+
+	t.Run("LDX Instruction", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.Execute([]uint8{LDX, 0x0e, BRK})
+
+		AssertRegisterX(t, &cpu, 0x0e)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+	})
+}
+
+func TestLDY(t *testing.T) {
+	t.Run("LDY", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0xaa] = 0x4a
+		cpu.instrLDY(0xaa)
+
+		AssertRegisterY(t, &cpu, 0x4a)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("Zero flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0xaa] = 0x00
+		cpu.instrLDY(0xaa)
+
+		AssertRegisterY(t, &cpu, 0x00)
+		AssertZero(t, &cpu, true)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("Negative flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0xaa] = 0xf0
+		cpu.instrLDY(0xaa)
+
+		AssertRegisterY(t, &cpu, 0xf0)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, true)
+	})
+
+	t.Run("LDY Instruction", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.Execute([]uint8{LDY, 0x0e, BRK})
+
+		AssertRegisterY(t, &cpu, 0x0e)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+	})
+}
+
 func TestAND(t *testing.T) {
 	t.Run("AND", func(t *testing.T) {
 		cpu := Cpu{}

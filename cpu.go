@@ -80,6 +80,10 @@ func (c *Cpu) run() {
 		switch instr.Action {
 		case "LDA":
 			c.instrLDA(param)
+		case "LDX":
+			c.instrLDX(param)
+		case "LDY":
+			c.instrLDY(param)
 		case "AND":
 			c.instrAND(param)
 		case "ADC":
@@ -213,6 +217,16 @@ func (c *Cpu) compare(regValue uint8, otherValue uint8) {
 func (c *Cpu) instrLDA(param uint16) {
 	c.RegA = c.readMemory(param)
 	c.updateFlags(c.RegA)
+}
+
+func (c *Cpu) instrLDX(param uint16) {
+	c.RegX = c.readMemory(param)
+	c.updateFlags(c.RegX)
+}
+
+func (c *Cpu) instrLDY(param uint16) {
+	c.RegY = c.readMemory(param)
+	c.updateFlags(c.RegY)
 }
 
 func (c *Cpu) instrAND(param uint16) {
