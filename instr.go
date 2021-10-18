@@ -62,6 +62,8 @@ const (
 	TAX = 0xaa
 	TAY = 0xa8
 	INX = 0xe8
+
+	BEQ = 0xf0
 )
 
 // AddressingModes
@@ -143,4 +145,5 @@ var instructionMap = map[uint8]Instruction{
 	0xaa: {"TAX", IMPLICIT, 1},
 	0xa8: {"TAY", IMPLICIT, 1},
 	0xe8: {"INX", IMPLICIT, 1},
+	0xf0: {"BEQ", RELATIVE, 2},
 }

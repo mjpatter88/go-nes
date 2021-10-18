@@ -64,13 +64,13 @@ func (c *Cpu) run() {
 		case ZERO_X:
 			param = c.ZeroXMode()
 		case ZERO_Y:
-			panic(fmt.Errorf("unsuppored addressing mode %q", instr.AddressingMode))
+			panic(fmt.Errorf("unsuppored addressing mode %b", instr.AddressingMode))
 		case IMMEDIATE:
 			param = c.ImmediateMode()
 		case RELATIVE:
-			panic(fmt.Errorf("unsuppored addressing mode %q", instr.AddressingMode))
+			param = c.RelativeMode()
 		case INDIRECT:
-			panic(fmt.Errorf("unsuppored addressing mode %q", instr.AddressingMode))
+			panic(fmt.Errorf("unsuppored addressing mode %b", instr.AddressingMode))
 		case INDIRECT_X:
 			param = c.IndirectXMode()
 		case INDIRECT_Y:
@@ -104,6 +104,8 @@ func (c *Cpu) run() {
 		case "RTS":
 			c.instrRTS(param)
 			didJump = true
+		case "BEQ":
+			didJump = c.instrBEQ(param)
 		case "CLC":
 			c.instrCLC()
 		case "BRK":
@@ -114,6 +116,7 @@ func (c *Cpu) run() {
 
 		// Jump instructions are expected to manually update the program counter themselves
 		if !didJump {
+			// TODO(mjpatter88) fix this to not be a loop.
 			for i := 0; i < instr.NumberOfBytes; i++ {
 				c.ProgramCounter++
 			}
@@ -281,6 +284,15 @@ func (c *Cpu) instrRTS(param uint16) {
 	c.ProgramCounter = value + 1
 }
 
+// Returns true if branch was taken, false otherwise
+func (c *Cpu) instrBEQ(param uint16) bool {
+	if c.Status.Zero {
+		c.ProgramCounter = param
+		return true
+	}
+	return false
+}
+
 // https://skilldrick.github.io/easy6502/#addressing
 func (c *Cpu) ImmediateMode() uint16 {
 	// Return the address of the value directly after the opcode.
@@ -356,6 +368,13 @@ func (c *Cpu) IndirectYMode() uint16 {
 	// Address is two bytes little endian (LSB first)
 	address := c.readMemory_u16(uint16(index))
 	return address
+}
+
+func (c *Cpu) RelativeMode() uint16 {
+	// Relative mode instructions are size 2.
+	// Return pc + 2 + the offset
+	offset := c.readMemory(c.ProgramCounter + 1)
+	return c.ProgramCounter + 2 + uint16(offset)
 }
 
 // https://skilldrick.github.io/easy6502/#stack
