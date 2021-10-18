@@ -84,6 +84,8 @@ func (c *Cpu) run() {
 			c.instrAND(param)
 		case "ADC":
 			c.instrADC(param)
+		case "CMP":
+			c.instrCMP(param)
 		case "STA":
 			c.instrSTA(param)
 		case "TAX":
@@ -190,6 +192,29 @@ func (c *Cpu) instrADC(param uint16) {
 	value := c.readMemory(param)
 	c.RegA += value
 	c.updateFlags(c.RegA)
+}
+
+// Compare the value in regA to another value.
+// If  regA == value then Zero reg = true
+// If  regA < value then Negative reg = true
+// If  regA > value then Carry reg = true
+func (c *Cpu) instrCMP(param uint16) {
+	value := c.readMemory(param)
+	if c.RegA == value {
+		c.Status.Zero = true
+		c.Status.Carry = false
+		c.Status.Negative = false
+	}
+	if c.RegA < value {
+		c.Status.Zero = false
+		c.Status.Carry = false
+		c.Status.Negative = true
+	}
+	if c.RegA > value {
+		c.Status.Zero = false
+		c.Status.Carry = true
+		c.Status.Negative = false
+	}
 }
 
 func (c *Cpu) instrSTA(param uint16) {

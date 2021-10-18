@@ -151,6 +151,51 @@ func TestADC(t *testing.T) {
 	})
 }
 
+func TestCMP(t *testing.T) {
+	t.Run("CMP - equal", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegA = 0x4a
+		cpu.memory[0xaa] = 0x4a
+		cpu.instrCMP(0xaa)
+
+		AssertZero(t, &cpu, true)
+		AssertNegative(t, &cpu, false)
+		AssertCarry(t, &cpu, false)
+	})
+
+	t.Run("CMP - regA less than", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegA = 0x0a
+		cpu.memory[0xaa] = 0x4a
+		cpu.instrCMP(0xaa)
+
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, true)
+		AssertCarry(t, &cpu, false)
+	})
+
+	t.Run("CMP - regA greater than", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegA = 0x5a
+		cpu.memory[0xaa] = 0x4a
+		cpu.instrCMP(0xaa)
+
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+		AssertCarry(t, &cpu, true)
+	})
+
+	t.Run("CMP Instruction", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.Execute([]uint8{LDA, 0x0e, CMP, 0x0e, BRK})
+
+		AssertRegisterA(t, &cpu, 0x0e)
+		AssertZero(t, &cpu, true)
+		AssertNegative(t, &cpu, false)
+		AssertCarry(t, &cpu, false)
+	})
+}
+
 func TestSTA(t *testing.T) {
 	t.Run("STA", func(t *testing.T) {
 		cpu := Cpu{}
@@ -411,6 +456,8 @@ func TestJumpingInstructionExecution(t *testing.T) {
 		AssertRegisterX(t, &cpu, 0x01)
 	})
 }
+
+// TODO(mjpatter) test combinations of compare instructions with branching instructions
 
 func TestFiveInstructions(t *testing.T) {
 	cpu := Cpu{}
