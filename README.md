@@ -20,4 +20,4 @@ that the comparison is unsigned but also describes how to achieve a signed compa
 ### Other Resources
 * https://skilldrick.github.io/easy6502/
 * http://www.6502.org/tutorials/6502opcodes.html
-* http://6502.org/tutorials/compare_beyond.html
+* http://6502.org/tutorials/

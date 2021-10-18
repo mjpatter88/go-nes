@@ -180,6 +180,31 @@ func (c *Cpu) resetStatus() {
 	c.Status = StatusRegister{}
 }
 
+// Compare the register value to another value.
+// If  regVal == OtherValue then Zero reg = true
+// If  regVal < OtherValue then Negative reg = true
+// If  regVal > OtherValue then Carry reg = true
+//
+// See: http://6502.org/tutorials/compare_instructions.html and
+// http://6502.org/tutorials/compare_beyond.html
+func (c *Cpu) compare(regValue uint8, otherValue uint8) {
+	if regValue == otherValue {
+		c.Status.Zero = true
+		c.Status.Carry = false
+		c.Status.Negative = false
+	}
+	if regValue < otherValue {
+		c.Status.Zero = false
+		c.Status.Carry = false
+		c.Status.Negative = true
+	}
+	if regValue > otherValue {
+		c.Status.Zero = false
+		c.Status.Carry = true
+		c.Status.Negative = false
+	}
+}
+
 func (c *Cpu) instrLDA(param uint16) {
 	c.RegA = c.readMemory(param)
 	c.updateFlags(c.RegA)
@@ -198,73 +223,19 @@ func (c *Cpu) instrADC(param uint16) {
 	c.updateFlags(c.RegA)
 }
 
-// Compare the value in regA to another value.
-// If  regA == value then Zero reg = true
-// If  regA < value then Negative reg = true
-// If  regA > value then Carry reg = true
 func (c *Cpu) instrCMP(param uint16) {
 	value := c.readMemory(param)
-	if c.RegA == value {
-		c.Status.Zero = true
-		c.Status.Carry = false
-		c.Status.Negative = false
-	}
-	if c.RegA < value {
-		c.Status.Zero = false
-		c.Status.Carry = false
-		c.Status.Negative = true
-	}
-	if c.RegA > value {
-		c.Status.Zero = false
-		c.Status.Carry = true
-		c.Status.Negative = false
-	}
+	c.compare(c.RegA, value)
 }
 
-// Compare the value in regX to another value.
-// If  regX == value then Zero reg = true
-// If  regX < value then Negative reg = true
-// If  regX > value then Carry reg = true
 func (c *Cpu) instrCPX(param uint16) {
 	value := c.readMemory(param)
-	if c.RegX == value {
-		c.Status.Zero = true
-		c.Status.Carry = false
-		c.Status.Negative = false
-	}
-	if c.RegX < value {
-		c.Status.Zero = false
-		c.Status.Carry = false
-		c.Status.Negative = true
-	}
-	if c.RegX > value {
-		c.Status.Zero = false
-		c.Status.Carry = true
-		c.Status.Negative = false
-	}
+	c.compare(c.RegX, value)
 }
 
-// Compare the value in regY to another value.
-// If  regY == value then Zero reg = true
-// If  regY < value then Negative reg = true
-// If  regY > value then Carry reg = true
 func (c *Cpu) instrCPY(param uint16) {
 	value := c.readMemory(param)
-	if c.RegY == value {
-		c.Status.Zero = true
-		c.Status.Carry = false
-		c.Status.Negative = false
-	}
-	if c.RegY < value {
-		c.Status.Zero = false
-		c.Status.Carry = false
-		c.Status.Negative = true
-	}
-	if c.RegY > value {
-		c.Status.Zero = false
-		c.Status.Carry = true
-		c.Status.Negative = false
-	}
+	c.compare(c.RegY, value)
 }
 
 func (c *Cpu) instrSTA(param uint16) {
