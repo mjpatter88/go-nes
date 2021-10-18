@@ -196,6 +196,96 @@ func TestCMP(t *testing.T) {
 	})
 }
 
+func TestCPX(t *testing.T) {
+	t.Run("CPX - equal", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegX = 0x4a
+		cpu.memory[0xaa] = 0x4a
+		cpu.instrCPX(0xaa)
+
+		AssertZero(t, &cpu, true)
+		AssertNegative(t, &cpu, false)
+		AssertCarry(t, &cpu, false)
+	})
+
+	t.Run("CPX - regX less than", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegX = 0x0a
+		cpu.memory[0xaa] = 0x4a
+		cpu.instrCPX(0xaa)
+
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, true)
+		AssertCarry(t, &cpu, false)
+	})
+
+	t.Run("CPX - regX greater than", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegX = 0x5a
+		cpu.memory[0xaa] = 0x4a
+		cpu.instrCPX(0xaa)
+
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+		AssertCarry(t, &cpu, true)
+	})
+
+	t.Run("CPX Instruction", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.Execute([]uint8{LDA, 0x0e, TAX, CPX, 0x0e, BRK})
+
+		AssertRegisterX(t, &cpu, 0x0e)
+		AssertZero(t, &cpu, true)
+		AssertNegative(t, &cpu, false)
+		AssertCarry(t, &cpu, false)
+	})
+}
+
+func TestCPY(t *testing.T) {
+	t.Run("CPY - equal", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegY = 0x4a
+		cpu.memory[0xaa] = 0x4a
+		cpu.instrCPY(0xaa)
+
+		AssertZero(t, &cpu, true)
+		AssertNegative(t, &cpu, false)
+		AssertCarry(t, &cpu, false)
+	})
+
+	t.Run("CPY - regY less than", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegY = 0x0a
+		cpu.memory[0xaa] = 0x4a
+		cpu.instrCPY(0xaa)
+
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, true)
+		AssertCarry(t, &cpu, false)
+	})
+
+	t.Run("CPY - regY greater than", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegY = 0x5a
+		cpu.memory[0xaa] = 0x4a
+		cpu.instrCPY(0xaa)
+
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+		AssertCarry(t, &cpu, true)
+	})
+
+	t.Run("CPY Instruction", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.Execute([]uint8{LDA, 0x0e, TAY, CPY, 0x0e, BRK})
+
+		AssertRegisterY(t, &cpu, 0x0e)
+		AssertZero(t, &cpu, true)
+		AssertNegative(t, &cpu, false)
+		AssertCarry(t, &cpu, false)
+	})
+}
+
 func TestSTA(t *testing.T) {
 	t.Run("STA", func(t *testing.T) {
 		cpu := Cpu{}

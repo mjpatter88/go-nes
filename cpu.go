@@ -86,6 +86,10 @@ func (c *Cpu) run() {
 			c.instrADC(param)
 		case "CMP":
 			c.instrCMP(param)
+		case "CPX":
+			c.instrCPX(param)
+		case "CPY":
+			c.instrCPY(param)
 		case "STA":
 			c.instrSTA(param)
 		case "TAX":
@@ -211,6 +215,52 @@ func (c *Cpu) instrCMP(param uint16) {
 		c.Status.Negative = true
 	}
 	if c.RegA > value {
+		c.Status.Zero = false
+		c.Status.Carry = true
+		c.Status.Negative = false
+	}
+}
+
+// Compare the value in regX to another value.
+// If  regX == value then Zero reg = true
+// If  regX < value then Negative reg = true
+// If  regX > value then Carry reg = true
+func (c *Cpu) instrCPX(param uint16) {
+	value := c.readMemory(param)
+	if c.RegX == value {
+		c.Status.Zero = true
+		c.Status.Carry = false
+		c.Status.Negative = false
+	}
+	if c.RegX < value {
+		c.Status.Zero = false
+		c.Status.Carry = false
+		c.Status.Negative = true
+	}
+	if c.RegX > value {
+		c.Status.Zero = false
+		c.Status.Carry = true
+		c.Status.Negative = false
+	}
+}
+
+// Compare the value in regY to another value.
+// If  regY == value then Zero reg = true
+// If  regY < value then Negative reg = true
+// If  regY > value then Carry reg = true
+func (c *Cpu) instrCPY(param uint16) {
+	value := c.readMemory(param)
+	if c.RegY == value {
+		c.Status.Zero = true
+		c.Status.Carry = false
+		c.Status.Negative = false
+	}
+	if c.RegY < value {
+		c.Status.Zero = false
+		c.Status.Carry = false
+		c.Status.Negative = true
+	}
+	if c.RegY > value {
 		c.Status.Zero = false
 		c.Status.Carry = true
 		c.Status.Negative = false

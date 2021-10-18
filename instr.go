@@ -43,6 +43,14 @@ const (
 	CMP_IND_X  = 0xc1
 	CMP_IND_Y  = 0xd1
 
+	CPX      = 0xe0
+	CPX_ZERO = 0xe4
+	CPX_ABS  = 0xec
+
+	CPY      = 0xc0
+	CPY_ZERO = 0xc4
+	CPY_ABS  = 0xcc
+
 	STA_ZERO   = 0x85
 	STA_ZERO_X = 0x95
 	STA_ABS    = 0x8d
@@ -119,6 +127,12 @@ var instructionMap = map[uint8]Instruction{
 	0xd9: {"CMP", ABSOLUTE_Y, 3},
 	0xc1: {"CMP", INDIRECT_X, 2},
 	0xd1: {"CMP", INDIRECT_Y, 2},
+	0xe0: {"CPX", IMMEDIATE, 2},
+	0xe4: {"CPX", ZERO, 2},
+	0xec: {"CPX", ABSOLUTE, 3},
+	0xc0: {"CPY", IMMEDIATE, 2},
+	0xc4: {"CPY", ZERO, 2},
+	0xcc: {"CPY", ABSOLUTE, 3},
 	0x85: {"STA", ZERO, 2},
 	0x95: {"STA", ZERO_X, 2},
 	0x8d: {"STA", ABSOLUTE, 3},

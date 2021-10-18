@@ -290,6 +290,50 @@ func TestDecodeCMP(t *testing.T) {
 	})
 }
 
+func TestDecodeCPX(t *testing.T) {
+	t.Run("Immediate", func(t *testing.T) {
+		instr := Decode(0xe0)
+		AssertAction(t, instr, "CPX")
+		AssertAddressingMode(t, instr, IMMEDIATE)
+		AssertNumberOfBytes(t, instr, 2)
+	})
+	t.Run("Zero", func(t *testing.T) {
+		instr := Decode(0xe4)
+		AssertAction(t, instr, "CPX")
+		AssertAddressingMode(t, instr, ZERO)
+		AssertNumberOfBytes(t, instr, 2)
+	})
+
+	t.Run("ABSOLUTE", func(t *testing.T) {
+		instr := Decode(0xec)
+		AssertAction(t, instr, "CPX")
+		AssertAddressingMode(t, instr, ABSOLUTE)
+		AssertNumberOfBytes(t, instr, 3)
+	})
+}
+
+func TestDecodeCPY(t *testing.T) {
+	t.Run("Immediate", func(t *testing.T) {
+		instr := Decode(0xc0)
+		AssertAction(t, instr, "CPY")
+		AssertAddressingMode(t, instr, IMMEDIATE)
+		AssertNumberOfBytes(t, instr, 2)
+	})
+	t.Run("Zero", func(t *testing.T) {
+		instr := Decode(0xc4)
+		AssertAction(t, instr, "CPY")
+		AssertAddressingMode(t, instr, ZERO)
+		AssertNumberOfBytes(t, instr, 2)
+	})
+
+	t.Run("ABSOLUTE", func(t *testing.T) {
+		instr := Decode(0xcc)
+		AssertAction(t, instr, "CPY")
+		AssertAddressingMode(t, instr, ABSOLUTE)
+		AssertNumberOfBytes(t, instr, 3)
+	})
+}
+
 func TestDecode_TAX(t *testing.T) {
 	instr := Decode(0xaa)
 	AssertAction(t, instr, "TAX")
