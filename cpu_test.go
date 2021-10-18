@@ -573,9 +573,34 @@ func TestBEQ(t *testing.T) {
 	})
 }
 
+func TestBNE(t *testing.T) {
+	t.Run("BNE", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.ProgramCounter = 0x8000
+		cpu.Status.Zero = false
+		branchTaken := cpu.instrBNE(0x1234)
+
+		if !branchTaken {
+			t.Fatalf("Expected to take branch but did not.")
+		}
+		AssertProgramCounter(t, &cpu, 0x1234)
+	})
+	t.Run("BNE - No branch", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.ProgramCounter = 0x8000
+		cpu.Status.Zero = true
+		branchTaken := cpu.instrBNE(0x1234)
+
+		if branchTaken {
+			t.Fatalf("Expected to not take branch but did.")
+		}
+		AssertProgramCounter(t, &cpu, 0x8000)
+	})
+
+}
+
 // Test combinations of compare instructions with branching instructions
 func TestCompareAndBranch(t *testing.T) {
-
 	t.Run("CMP + BEQ", func(t *testing.T) {
 		cpu := Cpu{}
 		// Branch over the INX instruction.
@@ -588,6 +613,22 @@ func TestCompareAndBranch(t *testing.T) {
 		cpu := Cpu{}
 		// Don't branch over the INX instruction.
 		cpu.Execute([]uint8{LDA, 0x05, CMP, 0x06, BEQ, 0x01, INX, BRK})
+		AssertRegisterX(t, &cpu, 0x01)
+
+		AssertProgramCounter(t, &cpu, 0x8008)
+	})
+	t.Run("CMP + BNE", func(t *testing.T) {
+		cpu := Cpu{}
+		// Branch over the INX instruction.
+		cpu.Execute([]uint8{LDA, 0x05, CMP, 0x06, BNE, 0x01, INX, BRK})
+		AssertRegisterX(t, &cpu, 0x00)
+
+		AssertProgramCounter(t, &cpu, 0x8008)
+	})
+	t.Run("CMP + BNE - No Branch", func(t *testing.T) {
+		cpu := Cpu{}
+		// Don't branch over the INX instruction.
+		cpu.Execute([]uint8{LDA, 0x05, CMP, 0x05, BNE, 0x01, INX, BRK})
 		AssertRegisterX(t, &cpu, 0x01)
 
 		AssertProgramCounter(t, &cpu, 0x8008)

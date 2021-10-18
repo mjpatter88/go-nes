@@ -106,6 +106,8 @@ func (c *Cpu) run() {
 			didJump = true
 		case "BEQ":
 			didJump = c.instrBEQ(param)
+		case "BNE":
+			didJump = c.instrBNE(param)
 		case "CLC":
 			c.instrCLC()
 		case "BRK":
@@ -287,6 +289,15 @@ func (c *Cpu) instrRTS(param uint16) {
 // Returns true if branch was taken, false otherwise
 func (c *Cpu) instrBEQ(param uint16) bool {
 	if c.Status.Zero {
+		c.ProgramCounter = param
+		return true
+	}
+	return false
+}
+
+// Returns true if branch was taken, false otherwise
+func (c *Cpu) instrBNE(param uint16) bool {
+	if !c.Status.Zero {
 		c.ProgramCounter = param
 		return true
 	}

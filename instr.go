@@ -64,6 +64,7 @@ const (
 	INX = 0xe8
 
 	BEQ = 0xf0
+	BNE = 0xd0
 )
 
 // AddressingModes
@@ -146,4 +147,5 @@ var instructionMap = map[uint8]Instruction{
 	0xa8: {"TAY", IMPLICIT, 1},
 	0xe8: {"INX", IMPLICIT, 1},
 	0xf0: {"BEQ", RELATIVE, 2},
+	0xd0: {"BNE", RELATIVE, 2},
 }

@@ -383,6 +383,13 @@ func TestDecode_BEQ(t *testing.T) {
 	AssertNumberOfBytes(t, instr, 2)
 }
 
+func TestDecode_BNE(t *testing.T) {
+	instr := Decode(0xd0)
+	AssertAction(t, instr, "BNE")
+	AssertAddressingMode(t, instr, RELATIVE)
+	AssertNumberOfBytes(t, instr, 2)
+}
+
 func AssertAction(t *testing.T, instr Instruction, action string) {
 	if instr.Action != action {
 		t.Errorf("Expected Action to be %s but was %s", action, instr.Action)
