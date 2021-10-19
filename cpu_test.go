@@ -550,6 +550,47 @@ func TestINX(t *testing.T) {
 	})
 }
 
+func TestDEX(t *testing.T) {
+	t.Run("DEX", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegX = 0x3a
+		cpu.instrDEX()
+
+		AssertRegisterX(t, &cpu, 0x39)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("Zero flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegX = 0x01
+		cpu.instrDEX()
+
+		AssertRegisterX(t, &cpu, 0x00)
+		AssertZero(t, &cpu, true)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("Negative flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegX = 0xff
+		cpu.instrDEX()
+
+		AssertRegisterX(t, &cpu, 0xfe)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, true)
+	})
+
+	t.Run("DEX Instruction", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.Execute([]uint8{LDA, 0x0e, TAX, DEX, BRK})
+
+		AssertRegisterX(t, &cpu, 0x0d)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+	})
+}
+
 func TestCLC(t *testing.T) {
 	t.Run("CLC", func(t *testing.T) {
 		cpu := Cpu{}

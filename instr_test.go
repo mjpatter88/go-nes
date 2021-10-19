@@ -436,6 +436,13 @@ func TestDecode_INX(t *testing.T) {
 	AssertNumberOfBytes(t, instr, 1)
 }
 
+func TestDecode_DEX(t *testing.T) {
+	instr := Decode(0xca)
+	AssertAction(t, instr, "DEX")
+	AssertAddressingMode(t, instr, IMPLICIT)
+	AssertNumberOfBytes(t, instr, 1)
+}
+
 func TestDecode_CLC(t *testing.T) {
 	instr := Decode(0x18)
 	AssertAction(t, instr, "CLC")

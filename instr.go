@@ -73,8 +73,9 @@ const (
 
 	TAX = 0xaa
 	TXA = 0x8a
-	TAY = 0xa8
+	DEX = 0xca
 	INX = 0xe8
+	TAY = 0xa8
 
 	BEQ = 0xf0
 	BNE = 0xd0
@@ -168,8 +169,9 @@ var instructionMap = map[uint8]Instruction{
 	0x91: {"STA", INDIRECT_Y, 2},
 	0xaa: {"TAX", IMPLICIT, 1},
 	0x8a: {"TXA", IMPLICIT, 1},
-	0xa8: {"TAY", IMPLICIT, 1},
+	0xca: {"DEX", IMPLICIT, 1},
 	0xe8: {"INX", IMPLICIT, 1},
+	0xa8: {"TAY", IMPLICIT, 1},
 	0xf0: {"BEQ", RELATIVE, 2},
 	0xd0: {"BNE", RELATIVE, 2},
 }
