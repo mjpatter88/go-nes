@@ -485,6 +485,13 @@ func TestDecode_RTS(t *testing.T) {
 	AssertNumberOfBytes(t, instr, 1)
 }
 
+func TestDecode_BPL(t *testing.T) {
+	instr := Decode(0x10)
+	AssertAction(t, instr, "BPL")
+	AssertAddressingMode(t, instr, RELATIVE)
+	AssertNumberOfBytes(t, instr, 2)
+}
+
 func TestDecode_BEQ(t *testing.T) {
 	instr := Decode(0xf0)
 	AssertAction(t, instr, "BEQ")

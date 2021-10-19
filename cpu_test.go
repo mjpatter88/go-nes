@@ -834,6 +834,32 @@ func TestJumpingInstructionExecution(t *testing.T) {
 	})
 }
 
+func TestBPL(t *testing.T) {
+	t.Run("BPL", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.ProgramCounter = 0x8000
+		cpu.Status.Negative = false
+		branchTaken := cpu.instrBPL(0x1234)
+
+		if !branchTaken {
+			t.Fatalf("Expected to take branch but did not.")
+		}
+		AssertProgramCounter(t, &cpu, 0x1234)
+	})
+
+	t.Run("BPL - No branch", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.ProgramCounter = 0x8000
+		cpu.Status.Negative = true
+		branchTaken := cpu.instrBPL(0x1234)
+
+		if branchTaken {
+			t.Fatalf("Expected to not take branch but did.")
+		}
+		AssertProgramCounter(t, &cpu, 0x8000)
+	})
+}
+
 func TestBEQ(t *testing.T) {
 	t.Run("BEQ", func(t *testing.T) {
 		cpu := Cpu{}
@@ -920,6 +946,18 @@ func TestCompareAndBranch(t *testing.T) {
 
 		AssertProgramCounter(t, &cpu, 0x8008)
 	})
+
+	t.Run("BPL loop", func(t *testing.T) {
+		cpu := Cpu{}
+		// Decrement X until it is no longer positive
+		// Branch back -3 (1 for dex and 2 for bpl)
+		cpu.Execute([]uint8{LDX, 0x05, DEX, BPL, 0xfd, BRK})
+		AssertRegisterX(t, &cpu, 0xff)
+
+		AssertProgramCounter(t, &cpu, 0x8006)
+	})
+
+	// Add a set of instructions that basically decrements x in a loop branching back to the start until its zero and then assert that x is -1 at the end.
 }
 
 func TestFiveInstructions(t *testing.T) {
@@ -1127,6 +1165,30 @@ func TestIndirectYMode(t *testing.T) {
 	if value != 0xab {
 		t.Errorf("Expected %#x but got %#x", 0xab, value)
 	}
+}
+
+func TestRelativeMode(t *testing.T) {
+	t.Run("Relative Mode - positive offset", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.ProgramCounter = 0x01
+		cpu.memory[0x02] = 0x34
+		value := cpu.RelativeMode()
+
+		if value != 0x37 {
+			t.Errorf("Expected %#x but got %#x", 0x37, value)
+		}
+	})
+	t.Run("Relative Mode - negative offset", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.ProgramCounter = 0x05
+		cpu.memory[0x06] = 0xfd
+		value := cpu.RelativeMode()
+
+		// 5 + 2 - 3 = 4
+		if value != 0x04 {
+			t.Errorf("Expected %#x but got %#x", 0x04, value)
+		}
+	})
 }
 
 // Test helpers

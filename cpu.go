@@ -118,6 +118,8 @@ func (c *Cpu) run() {
 		case "RTS":
 			c.instrRTS(param)
 			didJump = true
+		case "BPL":
+			didJump = c.instrBPL(param)
 		case "BEQ":
 			didJump = c.instrBEQ(param)
 		case "BNE":
@@ -336,6 +338,15 @@ func (c *Cpu) instrRTS(param uint16) {
 }
 
 // Returns true if branch was taken, false otherwise
+func (c *Cpu) instrBPL(param uint16) bool {
+	if !c.Status.Negative {
+		c.ProgramCounter = param
+		return true
+	}
+	return false
+}
+
+// Returns true if branch was taken, false otherwise
 func (c *Cpu) instrBEQ(param uint16) bool {
 	if c.Status.Zero {
 		c.ProgramCounter = param
@@ -432,9 +443,12 @@ func (c *Cpu) IndirectYMode() uint16 {
 
 func (c *Cpu) RelativeMode() uint16 {
 	// Relative mode instructions are size 2.
-	// Return pc + 2 + the offset
+	// Return pc + 2 + the offset.
+	//
+	// The offset can be positive or negative, so we need to use two's complement addition.
+	// There may be a better way, but this series of casts does the trick.
 	offset := c.readMemory(c.ProgramCounter + 1)
-	return c.ProgramCounter + 2 + uint16(offset)
+	return uint16(int16(c.ProgramCounter)+int16(int8(offset))) + 2
 }
 
 // https://skilldrick.github.io/easy6502/#stack
