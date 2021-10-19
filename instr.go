@@ -72,6 +72,7 @@ const (
 	STA_IND_Y  = 0x91
 
 	TAX = 0xaa
+	TXA = 0x8a
 	TAY = 0xa8
 	INX = 0xe8
 
@@ -166,6 +167,7 @@ var instructionMap = map[uint8]Instruction{
 	0x81: {"STA", INDIRECT_X, 2},
 	0x91: {"STA", INDIRECT_Y, 2},
 	0xaa: {"TAX", IMPLICIT, 1},
+	0x8a: {"TXA", IMPLICIT, 1},
 	0xa8: {"TAY", IMPLICIT, 1},
 	0xe8: {"INX", IMPLICIT, 1},
 	0xf0: {"BEQ", RELATIVE, 2},

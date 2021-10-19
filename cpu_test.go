@@ -427,6 +427,47 @@ func TestTAX(t *testing.T) {
 	})
 }
 
+func TestTXA(t *testing.T) {
+	t.Run("TXA", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegX = 0x3a
+		cpu.instrTXA()
+
+		AssertRegisterA(t, &cpu, 0x3a)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("Zero flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegX = 0x00
+		cpu.instrTXA()
+
+		AssertRegisterA(t, &cpu, 0x00)
+		AssertZero(t, &cpu, true)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("Negative flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegX = 0xf0
+		cpu.instrTXA()
+
+		AssertRegisterA(t, &cpu, 0xf0)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, true)
+	})
+
+	t.Run("TXA Instruction", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.Execute([]uint8{LDX, 0x0e, TXA, BRK})
+
+		AssertRegisterA(t, &cpu, 0x0e)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+	})
+}
+
 func TestTAY(t *testing.T) {
 	t.Run("TAY", func(t *testing.T) {
 		cpu := Cpu{}

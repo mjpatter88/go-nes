@@ -415,6 +415,13 @@ func TestDecode_TAX(t *testing.T) {
 	AssertNumberOfBytes(t, instr, 1)
 }
 
+func TestDecode_TXA(t *testing.T) {
+	instr := Decode(0x8a)
+	AssertAction(t, instr, "TXA")
+	AssertAddressingMode(t, instr, IMPLICIT)
+	AssertNumberOfBytes(t, instr, 1)
+}
+
 func TestDecode_TAY(t *testing.T) {
 	instr := Decode(0xa8)
 	AssertAction(t, instr, "TAY")

@@ -98,6 +98,8 @@ func (c *Cpu) run() {
 			c.instrSTA(param)
 		case "TAX":
 			c.instrTAX()
+		case "TXA":
+			c.instrTXA()
 		case "TAY":
 			c.instrTAY()
 		case "INX":
@@ -265,6 +267,11 @@ func (c *Cpu) instrSTA(param uint16) {
 func (c *Cpu) instrTAX() {
 	c.RegX = c.RegA
 	c.updateFlags(c.RegX)
+}
+
+func (c *Cpu) instrTXA() {
+	c.RegA = c.RegX
+	c.updateFlags(c.RegA)
 }
 
 func (c *Cpu) instrTAY() {
