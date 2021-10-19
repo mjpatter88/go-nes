@@ -76,6 +76,7 @@ const (
 	DEX = 0xca
 	INX = 0xe8
 	TAY = 0xa8
+	TYA = 0x98
 
 	BEQ = 0xf0
 	BNE = 0xd0
@@ -172,6 +173,7 @@ var instructionMap = map[uint8]Instruction{
 	0xca: {"DEX", IMPLICIT, 1},
 	0xe8: {"INX", IMPLICIT, 1},
 	0xa8: {"TAY", IMPLICIT, 1},
+	0x98: {"TYA", IMPLICIT, 1},
 	0xf0: {"BEQ", RELATIVE, 2},
 	0xd0: {"BNE", RELATIVE, 2},
 }

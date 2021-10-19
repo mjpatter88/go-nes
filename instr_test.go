@@ -422,9 +422,9 @@ func TestDecode_TXA(t *testing.T) {
 	AssertNumberOfBytes(t, instr, 1)
 }
 
-func TestDecode_TAY(t *testing.T) {
-	instr := Decode(0xa8)
-	AssertAction(t, instr, "TAY")
+func TestDecode_DEX(t *testing.T) {
+	instr := Decode(0xca)
+	AssertAction(t, instr, "DEX")
 	AssertAddressingMode(t, instr, IMPLICIT)
 	AssertNumberOfBytes(t, instr, 1)
 }
@@ -436,9 +436,16 @@ func TestDecode_INX(t *testing.T) {
 	AssertNumberOfBytes(t, instr, 1)
 }
 
-func TestDecode_DEX(t *testing.T) {
-	instr := Decode(0xca)
-	AssertAction(t, instr, "DEX")
+func TestDecode_TAY(t *testing.T) {
+	instr := Decode(0xa8)
+	AssertAction(t, instr, "TAY")
+	AssertAddressingMode(t, instr, IMPLICIT)
+	AssertNumberOfBytes(t, instr, 1)
+}
+
+func TestDecode_TYA(t *testing.T) {
+	instr := Decode(0x98)
+	AssertAction(t, instr, "TYA")
 	AssertAddressingMode(t, instr, IMPLICIT)
 	AssertNumberOfBytes(t, instr, 1)
 }

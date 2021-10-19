@@ -102,6 +102,8 @@ func (c *Cpu) run() {
 			c.instrTXA()
 		case "TAY":
 			c.instrTAY()
+		case "TYA":
+			c.instrTYA()
 		case "DEX":
 			c.instrDEX()
 		case "INX":
@@ -279,6 +281,11 @@ func (c *Cpu) instrTXA() {
 func (c *Cpu) instrTAY() {
 	c.RegY = c.RegA
 	c.updateFlags(c.RegY)
+}
+
+func (c *Cpu) instrTYA() {
+	c.RegA = c.RegY
+	c.updateFlags(c.RegA)
 }
 
 func (c *Cpu) instrINX() {
