@@ -632,6 +632,88 @@ func TestDEX(t *testing.T) {
 	})
 }
 
+func TestINY(t *testing.T) {
+	t.Run("INY", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegY = 0x3a
+		cpu.instrINY()
+
+		AssertRegisterY(t, &cpu, 0x3b)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("Zero flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegY = 0xff
+		cpu.instrINY()
+
+		AssertRegisterY(t, &cpu, 0x00)
+		AssertZero(t, &cpu, true)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("Negative flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegY = 0x7f
+		cpu.instrINY()
+
+		AssertRegisterY(t, &cpu, 0x80)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, true)
+	})
+
+	t.Run("INY Instruction", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.Execute([]uint8{LDA, 0x0e, TAY, INY, BRK})
+
+		AssertRegisterY(t, &cpu, 0x0f)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+	})
+}
+
+func TestDEY(t *testing.T) {
+	t.Run("DEY", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegY = 0x3a
+		cpu.instrDEY()
+
+		AssertRegisterY(t, &cpu, 0x39)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("Zero flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegY = 0x01
+		cpu.instrDEY()
+
+		AssertRegisterY(t, &cpu, 0x00)
+		AssertZero(t, &cpu, true)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("Negative flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegY = 0xff
+		cpu.instrDEY()
+
+		AssertRegisterY(t, &cpu, 0xfe)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, true)
+	})
+
+	t.Run("DEY Instruction", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.Execute([]uint8{LDA, 0x0e, TAY, DEY, BRK})
+
+		AssertRegisterY(t, &cpu, 0x0d)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+	})
+}
+
 func TestCLC(t *testing.T) {
 	t.Run("CLC", func(t *testing.T) {
 		cpu := Cpu{}
@@ -1089,7 +1171,7 @@ func AssertRegisterX(t *testing.T, cpu *Cpu, value uint8) {
 
 func AssertRegisterY(t *testing.T, cpu *Cpu, value uint8) {
 	if cpu.RegY != value {
-		t.Errorf("Expected registerY to be %#x but was %#x", value, cpu.RegX)
+		t.Errorf("Expected registerY to be %#x but was %#x", value, cpu.RegY)
 	}
 }
 

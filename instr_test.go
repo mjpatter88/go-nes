@@ -450,6 +450,20 @@ func TestDecode_TYA(t *testing.T) {
 	AssertNumberOfBytes(t, instr, 1)
 }
 
+func TestDecode_DEY(t *testing.T) {
+	instr := Decode(0x88)
+	AssertAction(t, instr, "DEY")
+	AssertAddressingMode(t, instr, IMPLICIT)
+	AssertNumberOfBytes(t, instr, 1)
+}
+
+func TestDecode_INY(t *testing.T) {
+	instr := Decode(0xc8)
+	AssertAction(t, instr, "INY")
+	AssertAddressingMode(t, instr, IMPLICIT)
+	AssertNumberOfBytes(t, instr, 1)
+}
+
 func TestDecode_CLC(t *testing.T) {
 	instr := Decode(0x18)
 	AssertAction(t, instr, "CLC")

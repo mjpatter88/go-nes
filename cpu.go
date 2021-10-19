@@ -108,6 +108,10 @@ func (c *Cpu) run() {
 			c.instrDEX()
 		case "INX":
 			c.instrINX()
+		case "DEY":
+			c.instrDEY()
+		case "INY":
+			c.instrINY()
 		case "JSR":
 			c.instrJSR(param)
 			didJump = true
@@ -296,6 +300,16 @@ func (c *Cpu) instrINX() {
 func (c *Cpu) instrDEX() {
 	c.RegX--
 	c.updateFlags(c.RegX)
+}
+
+func (c *Cpu) instrINY() {
+	c.RegY++
+	c.updateFlags(c.RegY)
+}
+
+func (c *Cpu) instrDEY() {
+	c.RegY--
+	c.updateFlags(c.RegY)
 }
 
 func (c *Cpu) instrCLC() {
