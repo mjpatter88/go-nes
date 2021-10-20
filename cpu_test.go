@@ -938,6 +938,110 @@ func TestBNE(t *testing.T) {
 
 }
 
+func TestBVC(t *testing.T) {
+	t.Run("BVC", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.ProgramCounter = 0x8000
+		cpu.Status.Overflow = false
+		branchTaken := cpu.instrBVC(0x1234)
+
+		if !branchTaken {
+			t.Fatalf("Expected to take branch but did not.")
+		}
+		AssertProgramCounter(t, &cpu, 0x1234)
+	})
+	t.Run("BVC - No branch", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.ProgramCounter = 0x8000
+		cpu.Status.Overflow = true
+		branchTaken := cpu.instrBVC(0x1234)
+
+		if branchTaken {
+			t.Fatalf("Expected to not take branch but did.")
+		}
+		AssertProgramCounter(t, &cpu, 0x8000)
+	})
+
+}
+
+func TestBVS(t *testing.T) {
+	t.Run("BVS", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.ProgramCounter = 0x8000
+		cpu.Status.Overflow = true
+		branchTaken := cpu.instrBVS(0x1234)
+
+		if !branchTaken {
+			t.Fatalf("Expected to take branch but did not.")
+		}
+		AssertProgramCounter(t, &cpu, 0x1234)
+	})
+	t.Run("BVS - No branch", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.ProgramCounter = 0x8000
+		cpu.Status.Overflow = false
+		branchTaken := cpu.instrBVS(0x1234)
+
+		if branchTaken {
+			t.Fatalf("Expected to not take branch but did.")
+		}
+		AssertProgramCounter(t, &cpu, 0x8000)
+	})
+
+}
+
+func TestBCC(t *testing.T) {
+	t.Run("BCC", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.ProgramCounter = 0x8000
+		cpu.Status.Carry = false
+		branchTaken := cpu.instrBCC(0x1234)
+
+		if !branchTaken {
+			t.Fatalf("Expected to take branch but did not.")
+		}
+		AssertProgramCounter(t, &cpu, 0x1234)
+	})
+	t.Run("BCC - No branch", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.ProgramCounter = 0x8000
+		cpu.Status.Carry = true
+		branchTaken := cpu.instrBCC(0x1234)
+
+		if branchTaken {
+			t.Fatalf("Expected to not take branch but did.")
+		}
+		AssertProgramCounter(t, &cpu, 0x8000)
+	})
+
+}
+
+func TestBCS(t *testing.T) {
+	t.Run("BCS", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.ProgramCounter = 0x8000
+		cpu.Status.Carry = true
+		branchTaken := cpu.instrBCS(0x1234)
+
+		if !branchTaken {
+			t.Fatalf("Expected to take branch but did not.")
+		}
+		AssertProgramCounter(t, &cpu, 0x1234)
+	})
+	t.Run("BCS - No branch", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.ProgramCounter = 0x8000
+		cpu.Status.Carry = false
+		branchTaken := cpu.instrBCS(0x1234)
+
+		if branchTaken {
+			t.Fatalf("Expected to not take branch but did.")
+		}
+		AssertProgramCounter(t, &cpu, 0x8000)
+	})
+
+}
+
 // Test combinations of compare instructions with branching instructions
 func TestCompareAndBranch(t *testing.T) {
 	t.Run("CMP + BEQ", func(t *testing.T) {

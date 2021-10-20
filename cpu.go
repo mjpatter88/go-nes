@@ -358,6 +358,42 @@ func (c *Cpu) instrBMI(param uint16) bool {
 }
 
 // Returns true if branch was taken, false otherwise
+func (c *Cpu) instrBVC(param uint16) bool {
+	if !c.Status.Overflow {
+		c.ProgramCounter = param
+		return true
+	}
+	return false
+}
+
+// Returns true if branch was taken, false otherwise
+func (c *Cpu) instrBVS(param uint16) bool {
+	if c.Status.Overflow {
+		c.ProgramCounter = param
+		return true
+	}
+	return false
+}
+
+// Returns true if branch was taken, false otherwise
+func (c *Cpu) instrBCC(param uint16) bool {
+	if !c.Status.Carry {
+		c.ProgramCounter = param
+		return true
+	}
+	return false
+}
+
+// Returns true if branch was taken, false otherwise
+func (c *Cpu) instrBCS(param uint16) bool {
+	if c.Status.Carry {
+		c.ProgramCounter = param
+		return true
+	}
+	return false
+}
+
+// Returns true if branch was taken, false otherwise
 func (c *Cpu) instrBEQ(param uint16) bool {
 	if c.Status.Zero {
 		c.ProgramCounter = param

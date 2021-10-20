@@ -499,6 +499,34 @@ func TestDecode_BMI(t *testing.T) {
 	AssertNumberOfBytes(t, instr, 2)
 }
 
+func TestDecode_BVC(t *testing.T) {
+	instr := Decode(0x50)
+	AssertAction(t, instr, "BVC")
+	AssertAddressingMode(t, instr, RELATIVE)
+	AssertNumberOfBytes(t, instr, 2)
+}
+
+func TestDecode_BVS(t *testing.T) {
+	instr := Decode(0x70)
+	AssertAction(t, instr, "BVS")
+	AssertAddressingMode(t, instr, RELATIVE)
+	AssertNumberOfBytes(t, instr, 2)
+}
+
+func TestDecode_BCC(t *testing.T) {
+	instr := Decode(0x90)
+	AssertAction(t, instr, "BCC")
+	AssertAddressingMode(t, instr, RELATIVE)
+	AssertNumberOfBytes(t, instr, 2)
+}
+
+func TestDecode_BCS(t *testing.T) {
+	instr := Decode(0xB0)
+	AssertAction(t, instr, "BCS")
+	AssertAddressingMode(t, instr, RELATIVE)
+	AssertNumberOfBytes(t, instr, 2)
+}
+
 func TestDecode_BEQ(t *testing.T) {
 	instr := Decode(0xf0)
 	AssertAction(t, instr, "BEQ")

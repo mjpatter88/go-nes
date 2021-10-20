@@ -82,6 +82,12 @@ const (
 
 	BPL = 0x10
 	BMI = 0x30
+
+	BVC = 0x50
+	BVS = 0x70
+	BCC = 0x90
+	BCS = 0xb0
+
 	BEQ = 0xf0
 	BNE = 0xd0
 )
@@ -182,6 +188,10 @@ var instructionMap = map[uint8]Instruction{
 	0xc8: {"INY", IMPLICIT, 1},
 	0x10: {"BPL", RELATIVE, 2},
 	0x30: {"BMI", RELATIVE, 2},
+	0x50: {"BVC", RELATIVE, 2},
+	0x70: {"BVS", RELATIVE, 2},
+	0x90: {"BCC", RELATIVE, 2},
+	0xb0: {"BCS", RELATIVE, 2},
 	0xf0: {"BEQ", RELATIVE, 2},
 	0xd0: {"BNE", RELATIVE, 2},
 }
