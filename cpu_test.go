@@ -834,6 +834,32 @@ func TestJumpingInstructionExecution(t *testing.T) {
 	})
 }
 
+func TestBMI(t *testing.T) {
+	t.Run("BMI", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.ProgramCounter = 0x8000
+		cpu.Status.Negative = true
+		branchTaken := cpu.instrBMI(0x1234)
+
+		if !branchTaken {
+			t.Fatalf("Expected to take branch but did not.")
+		}
+		AssertProgramCounter(t, &cpu, 0x1234)
+	})
+
+	t.Run("BMI - No branch", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.ProgramCounter = 0x8000
+		cpu.Status.Negative = false
+		branchTaken := cpu.instrBMI(0x1234)
+
+		if branchTaken {
+			t.Fatalf("Expected to not take branch but did.")
+		}
+		AssertProgramCounter(t, &cpu, 0x8000)
+	})
+}
+
 func TestBPL(t *testing.T) {
 	t.Run("BPL", func(t *testing.T) {
 		cpu := Cpu{}
@@ -957,7 +983,15 @@ func TestCompareAndBranch(t *testing.T) {
 		AssertProgramCounter(t, &cpu, 0x8006)
 	})
 
-	// Add a set of instructions that basically decrements x in a loop branching back to the start until its zero and then assert that x is -1 at the end.
+	t.Run("BMI loop", func(t *testing.T) {
+		cpu := Cpu{}
+		// Increment X until it is no longer negative
+		// Branch back -3 (1 for dex and 2 for bmi)
+		cpu.Execute([]uint8{LDX, 0xfd, INX, BMI, 0xfd, BRK})
+		AssertRegisterX(t, &cpu, 0x00)
+
+		AssertProgramCounter(t, &cpu, 0x8006)
+	})
 }
 
 func TestFiveInstructions(t *testing.T) {

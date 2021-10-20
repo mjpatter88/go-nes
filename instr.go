@@ -81,6 +81,7 @@ const (
 	INY = 0xc8
 
 	BPL = 0x10
+	BMI = 0x30
 	BEQ = 0xf0
 	BNE = 0xd0
 )
@@ -180,6 +181,7 @@ var instructionMap = map[uint8]Instruction{
 	0x88: {"DEY", IMPLICIT, 1},
 	0xc8: {"INY", IMPLICIT, 1},
 	0x10: {"BPL", RELATIVE, 2},
+	0x30: {"BMI", RELATIVE, 2},
 	0xf0: {"BEQ", RELATIVE, 2},
 	0xd0: {"BNE", RELATIVE, 2},
 }

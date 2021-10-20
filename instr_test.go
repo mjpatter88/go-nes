@@ -492,6 +492,13 @@ func TestDecode_BPL(t *testing.T) {
 	AssertNumberOfBytes(t, instr, 2)
 }
 
+func TestDecode_BMI(t *testing.T) {
+	instr := Decode(0x30)
+	AssertAction(t, instr, "BMI")
+	AssertAddressingMode(t, instr, RELATIVE)
+	AssertNumberOfBytes(t, instr, 2)
+}
+
 func TestDecode_BEQ(t *testing.T) {
 	instr := Decode(0xf0)
 	AssertAction(t, instr, "BEQ")
