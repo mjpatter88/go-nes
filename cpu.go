@@ -82,6 +82,12 @@ func (c *Cpu) run() {
 			c.instrLDA(param)
 		case "LDX":
 			c.instrLDX(param)
+		case "LSR":
+			if instr.AddressingMode == ACCUMULATOR {
+				c.instrLSR_acc()
+			} else {
+				c.instrLSR(param)
+			}
 		case "LDY":
 			c.instrLDY(param)
 		case "AND":
@@ -241,6 +247,14 @@ func (c *Cpu) instrLDX(param uint16) {
 func (c *Cpu) instrLDY(param uint16) {
 	c.RegY = c.readMemory(param)
 	c.updateFlags(c.RegY)
+}
+
+func (c *Cpu) instrLSR(param uint16) {
+	value := c.readMemory(param)
+	c.Status.Carry = (value & 0x01) != 0
+	value = value >> 1
+	c.writeMemory(param, value)
+	c.updateFlags(value)
 }
 
 func (c *Cpu) instrLSR_acc() {

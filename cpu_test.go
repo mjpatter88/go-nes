@@ -146,34 +146,47 @@ func TestLSR(t *testing.T) {
 		AssertCarry(t, &cpu, true)
 	})
 
-	// t.Run("Zero flag", func(t *testing.T) {
-	// 	cpu := Cpu{}
-	// 	cpu.memory[0xaa] = 0x00
-	// 	cpu.instrLSR(0xaa)
+	t.Run("Zero flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegA = 0x01
+		cpu.instrLSR_acc()
 
-	// 	AssertRegisterY(t, &cpu, 0x00)
-	// 	AssertZero(t, &cpu, true)
-	// 	AssertNegative(t, &cpu, false)
-	// })
+		AssertRegisterA(t, &cpu, 0x00)
+		AssertZero(t, &cpu, true)
+		AssertNegative(t, &cpu, false)
+		AssertCarry(t, &cpu, true)
+	})
 
-	// t.Run("Negative flag", func(t *testing.T) {
-	// 	cpu := Cpu{}
-	// 	cpu.memory[0xaa] = 0xf0
-	// 	cpu.instrLSR(0xaa)
+	t.Run("LSR Zero Page", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0xaa] = 0xff
+		cpu.instrLSR(0xaa)
 
-	// 	AssertRegisterY(t, &cpu, 0xf0)
-	// 	AssertZero(t, &cpu, false)
-	// 	AssertNegative(t, &cpu, true)
-	// })
+		AssertMemoryValue(t, &cpu, 0xaa, 0x7f)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+		AssertCarry(t, &cpu, true)
+	})
 
-	// t.Run("LSR Instruction", func(t *testing.T) {
-	// 	cpu := Cpu{}
-	// 	cpu.Execute([]uint8{LSR, 0x0e, BRK})
+	t.Run("LSR Instruction", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.Execute([]uint8{LDA, 0xff, LSR, BRK})
 
-	// 	AssertRegisterY(t, &cpu, 0x0e)
-	// 	AssertZero(t, &cpu, false)
-	// 	AssertNegative(t, &cpu, false)
-	// })
+		AssertRegisterA(t, &cpu, 0x7f)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("LSR Zero Page Instruction", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0xaa] = 0xff
+		cpu.Execute([]uint8{LSR_ZERO, 0xaa, BRK})
+
+		AssertMemoryValue(t, &cpu, 0xaa, 0x7f)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+		AssertCarry(t, &cpu, true)
+	})
 }
 
 func TestAND(t *testing.T) {

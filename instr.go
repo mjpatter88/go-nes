@@ -28,6 +28,12 @@ const (
 	LDY_ABS    = 0xac
 	LDY_ABS_X  = 0xbc
 
+	LSR        = 0x4a
+	LSR_ZERO   = 0x46
+	LSR_ZERO_X = 0x56
+	LSR_ABS    = 0x4e
+	LSR_ABS_X  = 0x5e
+
 	AND        = 0x29
 	AND_ZERO   = 0x25
 	AND_ZERO_X = 0x35
