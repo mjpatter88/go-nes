@@ -151,9 +151,7 @@ func (c *Cpu) run() {
 		// Jump instructions are expected to manually update the program counter themselves
 		if !didJump {
 			// TODO(mjpatter88) fix this to not be a loop.
-			for i := 0; i < instr.NumberOfBytes; i++ {
-				c.ProgramCounter++
-			}
+			c.ProgramCounter += uint16(instr.NumberOfBytes)
 		}
 	}
 }
