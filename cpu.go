@@ -118,6 +118,8 @@ func (c *Cpu) run() {
 			c.instrDEY()
 		case "INY":
 			c.instrINY()
+		case "INC":
+			c.instrINC(param)
 		case "JSR":
 			c.instrJSR(param)
 			didJump = true
@@ -272,6 +274,13 @@ func (c *Cpu) instrAND(param uint16) {
 	value := c.readMemory(param)
 	c.RegA &= value
 	c.updateFlags(c.RegA)
+}
+
+func (c *Cpu) instrINC(param uint16) {
+	value := c.readMemory(param)
+	value += 1
+	c.updateFlags(value)
+	c.writeMemory(param, value)
 }
 
 func (c *Cpu) instrADC(param uint16) {

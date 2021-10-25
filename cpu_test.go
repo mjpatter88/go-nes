@@ -189,6 +189,48 @@ func TestLSR(t *testing.T) {
 	})
 }
 
+func TestINC(t *testing.T) {
+	t.Run("INC", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0xaa] = 0xf1
+		cpu.instrINC(0xaa)
+
+		AssertMemoryValue(t, &cpu, 0xaa, 0xf2)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, true)
+	})
+
+	t.Run("Zero flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0xaa] = 0xff
+		cpu.instrINC(0xaa)
+
+		AssertMemoryValue(t, &cpu, 0xaa, 0x00)
+		AssertZero(t, &cpu, true)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("Negative flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0xaa] = 0x7f
+		cpu.instrINC(0xaa)
+
+		AssertMemoryValue(t, &cpu, 0xaa, 0x80)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, true)
+	})
+
+	t.Run("INC Instruction", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0xaa] = 0xf1
+		cpu.Execute([]uint8{INC_ZERO, 0xaa, BRK})
+
+		AssertMemoryValue(t, &cpu, 0xaa, 0xf2)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, true)
+	})
+}
+
 func TestAND(t *testing.T) {
 	t.Run("AND", func(t *testing.T) {
 		cpu := Cpu{}
@@ -1068,7 +1110,6 @@ func TestBCC(t *testing.T) {
 		}
 		AssertProgramCounter(t, &cpu, 0x8000)
 	})
-
 }
 
 func TestBCS(t *testing.T) {

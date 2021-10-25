@@ -445,6 +445,36 @@ func TestDecodeCPY(t *testing.T) {
 	})
 }
 
+func TestDecodeINC(t *testing.T) {
+	t.Run("Zero", func(t *testing.T) {
+		instr := Decode(0xe6)
+		AssertAction(t, instr, "INC")
+		AssertAddressingMode(t, instr, ZERO)
+		AssertNumberOfBytes(t, instr, 2)
+	})
+
+	t.Run("Zero X", func(t *testing.T) {
+		instr := Decode(0xf6)
+		AssertAction(t, instr, "INC")
+		AssertAddressingMode(t, instr, ZERO_X)
+		AssertNumberOfBytes(t, instr, 2)
+	})
+
+	t.Run("ABSOLUTE", func(t *testing.T) {
+		instr := Decode(0xee)
+		AssertAction(t, instr, "INC")
+		AssertAddressingMode(t, instr, ABSOLUTE)
+		AssertNumberOfBytes(t, instr, 3)
+	})
+
+	t.Run("ABSOLUTE X", func(t *testing.T) {
+		instr := Decode(0xfe)
+		AssertAction(t, instr, "INC")
+		AssertAddressingMode(t, instr, ABSOLUTE_X)
+		AssertNumberOfBytes(t, instr, 3)
+	})
+}
+
 func TestDecode_TAX(t *testing.T) {
 	instr := Decode(0xaa)
 	AssertAction(t, instr, "TAX")
