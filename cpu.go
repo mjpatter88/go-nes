@@ -128,6 +128,14 @@ func (c *Cpu) run() {
 			didJump = c.instrBPL(param)
 		case "BMI":
 			didJump = c.instrBMI(param)
+		case "BVC":
+			didJump = c.instrBVC(param)
+		case "BVS":
+			didJump = c.instrBVS(param)
+		case "BCC":
+			didJump = c.instrBCC(param)
+		case "BCS":
+			didJump = c.instrBCS(param)
 		case "BEQ":
 			didJump = c.instrBEQ(param)
 		case "BNE":
