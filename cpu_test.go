@@ -134,6 +134,48 @@ func TestLDY(t *testing.T) {
 	})
 }
 
+func TestLSR(t *testing.T) {
+	t.Run("LSR", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegA = 0xff
+		cpu.instrLSR_acc()
+
+		AssertRegisterA(t, &cpu, 0x7f)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+		AssertCarry(t, &cpu, true)
+	})
+
+	// t.Run("Zero flag", func(t *testing.T) {
+	// 	cpu := Cpu{}
+	// 	cpu.memory[0xaa] = 0x00
+	// 	cpu.instrLSR(0xaa)
+
+	// 	AssertRegisterY(t, &cpu, 0x00)
+	// 	AssertZero(t, &cpu, true)
+	// 	AssertNegative(t, &cpu, false)
+	// })
+
+	// t.Run("Negative flag", func(t *testing.T) {
+	// 	cpu := Cpu{}
+	// 	cpu.memory[0xaa] = 0xf0
+	// 	cpu.instrLSR(0xaa)
+
+	// 	AssertRegisterY(t, &cpu, 0xf0)
+	// 	AssertZero(t, &cpu, false)
+	// 	AssertNegative(t, &cpu, true)
+	// })
+
+	// t.Run("LSR Instruction", func(t *testing.T) {
+	// 	cpu := Cpu{}
+	// 	cpu.Execute([]uint8{LSR, 0x0e, BRK})
+
+	// 	AssertRegisterY(t, &cpu, 0x0e)
+	// 	AssertZero(t, &cpu, false)
+	// 	AssertNegative(t, &cpu, false)
+	// })
+}
+
 func TestAND(t *testing.T) {
 	t.Run("AND", func(t *testing.T) {
 		cpu := Cpu{}

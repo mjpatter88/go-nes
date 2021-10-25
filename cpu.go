@@ -243,6 +243,12 @@ func (c *Cpu) instrLDY(param uint16) {
 	c.updateFlags(c.RegY)
 }
 
+func (c *Cpu) instrLSR_acc() {
+	c.Status.Carry = (c.RegA & 0x01) != 0
+	c.RegA = c.RegA >> 1
+	c.updateFlags(c.RegA)
+}
+
 func (c *Cpu) instrAND(param uint16) {
 	value := c.readMemory(param)
 	c.RegA &= value

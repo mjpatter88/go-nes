@@ -94,18 +94,19 @@ const (
 
 // AddressingModes
 const (
-	IMPLICIT   = 0
-	ABSOLUTE   = 1
-	ABSOLUTE_X = 2
-	ABSOLUTE_Y = 3
-	ZERO       = 4
-	ZERO_X     = 5
-	ZERO_Y     = 6
-	IMMEDIATE  = 7
-	RELATIVE   = 8
-	INDIRECT   = 9
-	INDIRECT_X = 10
-	INDIRECT_Y = 11
+	IMPLICIT    = 0
+	ABSOLUTE    = 1
+	ABSOLUTE_X  = 2
+	ABSOLUTE_Y  = 3
+	ZERO        = 4
+	ZERO_X      = 5
+	ZERO_Y      = 6
+	IMMEDIATE   = 7
+	RELATIVE    = 8
+	INDIRECT    = 9
+	INDIRECT_X  = 10
+	INDIRECT_Y  = 11
+	ACCUMULATOR = 12
 )
 
 type Instruction struct {
@@ -141,6 +142,11 @@ var instructionMap = map[uint8]Instruction{
 	0xb4: {"LDY", ZERO_X, 2},
 	0xac: {"LDY", ABSOLUTE, 3},
 	0xbc: {"LDY", ABSOLUTE_X, 3},
+	0x4a: {"LSR", ACCUMULATOR, 1},
+	0x46: {"LSR", ZERO, 2},
+	0x56: {"LSR", ZERO_X, 2},
+	0x4e: {"LSR", ABSOLUTE, 3},
+	0x5e: {"LSR", ABSOLUTE_X, 3},
 	0x29: {"AND", IMMEDIATE, 2},
 	0x25: {"AND", ZERO, 2},
 	0x35: {"AND", ZERO_X, 2},

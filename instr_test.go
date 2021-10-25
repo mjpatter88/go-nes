@@ -141,6 +141,43 @@ func TestDecodeLDY(t *testing.T) {
 	})
 }
 
+func TestDecodeLSR(t *testing.T) {
+	t.Run("LSR", func(t *testing.T) {
+		instr := Decode(0x4a)
+		AssertAction(t, instr, "LSR")
+		AssertAddressingMode(t, instr, ACCUMULATOR)
+		AssertNumberOfBytes(t, instr, 1)
+	})
+
+	t.Run("Zero", func(t *testing.T) {
+		instr := Decode(0x46)
+		AssertAction(t, instr, "LSR")
+		AssertAddressingMode(t, instr, ZERO)
+		AssertNumberOfBytes(t, instr, 2)
+	})
+
+	t.Run("Zero X", func(t *testing.T) {
+		instr := Decode(0x56)
+		AssertAction(t, instr, "LSR")
+		AssertAddressingMode(t, instr, ZERO_X)
+		AssertNumberOfBytes(t, instr, 2)
+	})
+
+	t.Run("ABSOLUTE", func(t *testing.T) {
+		instr := Decode(0x4e)
+		AssertAction(t, instr, "LSR")
+		AssertAddressingMode(t, instr, ABSOLUTE)
+		AssertNumberOfBytes(t, instr, 3)
+	})
+
+	t.Run("ABSOLUTE X", func(t *testing.T) {
+		instr := Decode(0x5e)
+		AssertAction(t, instr, "LSR")
+		AssertAddressingMode(t, instr, ABSOLUTE_X)
+		AssertNumberOfBytes(t, instr, 3)
+	})
+}
+
 func TestDecodeAND(t *testing.T) {
 	t.Run("AND", func(t *testing.T) {
 		instr := Decode(0x29)
