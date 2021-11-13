@@ -78,6 +78,8 @@ func (c *Cpu) run() {
 		}
 
 		switch instr.Action {
+		case "BIT":
+			c.instrBIT(param)
 		case "LDA":
 			c.instrLDA(param)
 		case "LDX":
@@ -239,6 +241,24 @@ func (c *Cpu) compare(regValue uint8, otherValue uint8) {
 		c.Status.Carry = true
 		c.Status.Negative = false
 	}
+}
+
+func (c *Cpu) instrBIT(param uint16) {
+	// Set the zero flag based on the result of a logical and of the value
+	// loaded from memory and the accumulator register.
+	//
+	// Status flag handling here is complicated.
+	// Zero is set based on the result of the operation, but
+	// Negative and Overflow are set based on bits 7 and 6 of the operand respectively.
+	//
+	// See: https://www.masswerk.at/6502/6502_instruction_set.html#BIT
+
+	value := c.readMemory(param)
+	result := value & c.RegA
+
+	c.Status.Zero = (result == 0)
+	c.Status.Negative = ((value & (1 << 7)) != 0)
+	c.Status.Overflow = ((value & (1 << 6)) != 0)
 }
 
 func (c *Cpu) instrLDA(param uint16) {

@@ -11,6 +11,54 @@ func TestBRK(t *testing.T) {
 	AssertBreak(t, &cpu, true)
 }
 
+func TestBIT(t *testing.T) {
+	t.Run("BIT Zero", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegA = 0x00
+		cpu.memory[0xaa] = 0xff
+		cpu.instrBIT(0xaa)
+
+		AssertZero(t, &cpu, true)
+	})
+
+	t.Run("BIT Non-Zero", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegA = 0x4a
+		cpu.memory[0xaa] = 0x4a
+		cpu.instrBIT(0xaa)
+
+		AssertZero(t, &cpu, false)
+	})
+
+	t.Run("Negative flag", func(t *testing.T) {
+		// Negative flag is set to the value of bit 7 of the operand
+		cpu := Cpu{}
+		cpu.memory[0xaa] = 0x80
+		cpu.instrBIT(0xaa)
+
+		AssertNegative(t, &cpu, true)
+	})
+
+	t.Run("Overflow flag", func(t *testing.T) {
+		// Overflow flag is set to the value of bit 6 of the operand
+		cpu := Cpu{}
+		cpu.memory[0xaa] = 0x40
+		cpu.instrBIT(0xaa)
+
+		AssertOverflow(t, &cpu, true)
+	})
+
+	t.Run("BIT Instruction", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0xaa] = 0xff
+		cpu.Execute([]uint8{BIT_ZERO, 0xaa, BRK})
+
+		AssertZero(t, &cpu, true)
+		AssertNegative(t, &cpu, true)
+		AssertOverflow(t, &cpu, true)
+	})
+}
+
 func TestLDA(t *testing.T) {
 	t.Run("LDA", func(t *testing.T) {
 		cpu := Cpu{}

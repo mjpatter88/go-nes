@@ -7,6 +7,9 @@ const (
 	JSR = 0x20
 	RTS = 0x60
 
+	BIT_ZERO = 0x24
+	BIT_ABS  = 0x2c
+
 	LDA        = 0xa9
 	LDA_ZERO   = 0xa5
 	LDA_ZERO_X = 0xb5
@@ -134,6 +137,8 @@ var instructionMap = map[uint8]Instruction{
 	0x00: {"BRK", IMPLICIT, 1},
 	0x18: {"CLC", IMPLICIT, 1},
 	0x20: {"JSR", ABSOLUTE, 3},
+	0x24: {"BIT", ZERO, 2},
+	0x2c: {"BIT", ABSOLUTE, 3},
 	0x60: {"RTS", IMPLICIT, 1},
 	0xa9: {"LDA", IMMEDIATE, 2},
 	0xa5: {"LDA", ZERO, 2},

@@ -423,6 +423,22 @@ func TestDecodeCPX(t *testing.T) {
 	})
 }
 
+func TestDecodeBIT(t *testing.T) {
+	t.Run("Zero", func(t *testing.T) {
+		instr := Decode(0x24)
+		AssertAction(t, instr, "BIT")
+		AssertAddressingMode(t, instr, ZERO)
+		AssertNumberOfBytes(t, instr, 2)
+	})
+
+	t.Run("ABSOLUTE", func(t *testing.T) {
+		instr := Decode(0x2c)
+		AssertAction(t, instr, "BIT")
+		AssertAddressingMode(t, instr, ABSOLUTE)
+		AssertNumberOfBytes(t, instr, 3)
+	})
+}
+
 func TestDecodeCPY(t *testing.T) {
 	t.Run("Immediate", func(t *testing.T) {
 		instr := Decode(0xc0)
