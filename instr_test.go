@@ -9,6 +9,13 @@ func TestDecode_BRK(t *testing.T) {
 	AssertNumberOfBytes(t, instr, 1)
 }
 
+func TestDecode_NOP(t *testing.T) {
+	instr := Decode(0xea)
+	AssertAction(t, instr, "NOP")
+	AssertAddressingMode(t, instr, IMPLICIT)
+	AssertNumberOfBytes(t, instr, 1)
+}
+
 func TestDecodeLDA(t *testing.T) {
 	t.Run("LDA", func(t *testing.T) {
 		instr := Decode(0xa9)

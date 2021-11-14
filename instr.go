@@ -3,6 +3,7 @@ package main
 // Opcodes
 const (
 	BRK = 0x00
+	NOP = 0xea
 	CLC = 0x18
 	JSR = 0x20
 	RTS = 0x60
@@ -135,6 +136,7 @@ func Decode(opcode uint8) Instruction {
 
 var instructionMap = map[uint8]Instruction{
 	0x00: {"BRK", IMPLICIT, 1},
+	0xea: {"NOP", IMPLICIT, 1},
 	0x18: {"CLC", IMPLICIT, 1},
 	0x20: {"JSR", ABSOLUTE, 3},
 	0x24: {"BIT", ZERO, 2},

@@ -11,6 +11,13 @@ func TestBRK(t *testing.T) {
 	AssertBreak(t, &cpu, true)
 }
 
+func TestNOP(t *testing.T) {
+	cpu := Cpu{}
+	cpu.Execute([]uint8{NOP, BRK})
+
+	// No assertions.
+}
+
 func TestBIT(t *testing.T) {
 	t.Run("BIT Zero", func(t *testing.T) {
 		cpu := Cpu{}

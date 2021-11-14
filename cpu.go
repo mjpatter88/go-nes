@@ -148,6 +148,8 @@ func (c *Cpu) run() {
 			c.instrCLC()
 		case "BRK":
 			c.Status.Break = true
+		case "NOP":
+			// Intentionally empty
 		default:
 			panic(fmt.Errorf("unsuppored opcode %#x at pc: %#x", opcode, c.ProgramCounter))
 		}
