@@ -70,7 +70,7 @@ func (c *Cpu) run() {
 		case RELATIVE:
 			param = c.RelativeMode()
 		case INDIRECT:
-			panic(fmt.Errorf("unsuppored addressing mode %b", instr.AddressingMode))
+			param = c.IndirectMode()
 		case INDIRECT_X:
 			param = c.IndirectXMode()
 		case INDIRECT_Y:
@@ -144,6 +144,9 @@ func (c *Cpu) run() {
 			didJump = c.instrBEQ(param)
 		case "BNE":
 			didJump = c.instrBNE(param)
+		case "JMP":
+			c.instrJMP(param)
+			didJump = true
 		case "CLC":
 			c.instrCLC()
 		case "BRK":
@@ -467,6 +470,10 @@ func (c *Cpu) instrBNE(param uint16) bool {
 	return false
 }
 
+func (c *Cpu) instrJMP(param uint16) {
+	c.ProgramCounter = param
+}
+
 // https://skilldrick.github.io/easy6502/#addressing
 func (c *Cpu) ImmediateMode() uint16 {
 	// Return the address of the value directly after the opcode.
@@ -515,11 +522,24 @@ func (c *Cpu) AbsoluteYMode() uint16 {
 	return address
 }
 
-func (c *Cpu) IndirectXMode() uint16 {
+func (c *Cpu) IndirectMode() uint16 {
 	// Use the two bytes stored directly after the opcode as an index into memory.
-	// Treat them as litte endian (LSB first). Add the value in the X register.
-	// Use this sum as an initial index. Lookup the value stored in memory at
+	// Treat them as litte endian (LSB first). Lookup the value stored in memory at
 	// this index and return it.
+
+	// address is two bytes.
+	address := c.readMemory_u16(c.ProgramCounter + 1)
+
+	// Use the address to read a value from memory.
+	// Value is two bytes little endian (LSB first)
+	value := c.readMemory_u16(uint16(address))
+	return value
+}
+
+func (c *Cpu) IndirectXMode() uint16 {
+	// Use the byte stored directly after the opcode as an index into memory.
+	// Add the value in the X register. Use this sum as an initial index.
+	// Lookup the value stored in memory at this index and return it.
 
 	// Initial address is a byte and the overflow/wrap behavior is intentional.
 	index := c.readMemory(c.ProgramCounter + 1)

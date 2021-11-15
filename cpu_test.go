@@ -1190,7 +1190,29 @@ func TestBCS(t *testing.T) {
 		}
 		AssertProgramCounter(t, &cpu, 0x8000)
 	})
+}
 
+func TestJMP(t *testing.T) {
+	t.Run("JMP", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.ProgramCounter = 0x8000
+		cpu.instrJMP(0x1234)
+
+		AssertProgramCounter(t, &cpu, 0x1234)
+	})
+	t.Run("JMP Instruction - Absolute", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.Execute([]uint8{JMP_ABS, 0x34, 0x12, BRK})
+		// Assert jump target +1 since it will execute the following instruction which is 0x00 (BRK)
+		AssertProgramCounter(t, &cpu, 0x1235)
+	})
+
+	t.Run("JMP Instruction - Indirect", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.Execute([]uint8{JMP_IND, 0x03, 0x80, 0x34, 0x12, BRK})
+		// Assert jump target +1 since it will execute the following instruction which is 0x00 (BRK)
+		AssertProgramCounter(t, &cpu, 0x1235)
+	})
 }
 
 // Test combinations of compare instructions with branching instructions
@@ -1427,6 +1449,20 @@ func TestAbsoluteYMode(t *testing.T) {
 
 	if value != 0x1235 {
 		t.Errorf("Expected %#x but got %#x", 0x1235, value)
+	}
+}
+func TestIndirectMode(t *testing.T) {
+	cpu := Cpu{}
+	cpu.ProgramCounter = 0x01
+	cpu.memory[0x02] = 0xf0
+	cpu.memory[0x03] = 0x00
+
+	cpu.memory[0xf0] = 0x01
+	cpu.memory[0xf1] = 0xcc
+	value := cpu.IndirectMode()
+
+	if value != 0xcc01 {
+		t.Errorf("Expected %#x but got %#x", 0xcc01, value)
 	}
 }
 

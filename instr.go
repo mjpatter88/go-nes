@@ -105,6 +105,9 @@ const (
 
 	BEQ = 0xf0
 	BNE = 0xd0
+
+	JMP_ABS = 0x4c
+	JMP_IND = 0x6c
 )
 
 // AddressingModes
@@ -222,4 +225,6 @@ var instructionMap = map[uint8]Instruction{
 	0xb0: {"BCS", RELATIVE, 2},
 	0xf0: {"BEQ", RELATIVE, 2},
 	0xd0: {"BNE", RELATIVE, 2},
+	0x4c: {"JMP", ABSOLUTE, 3},
+	0x6c: {"JMP", INDIRECT, 3},
 }

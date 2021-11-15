@@ -16,6 +16,22 @@ func TestDecode_NOP(t *testing.T) {
 	AssertNumberOfBytes(t, instr, 1)
 }
 
+func TestDecode_JMP(t *testing.T) {
+	t.Run("JMP Absolute", func(t *testing.T) {
+		instr := Decode(0x4c)
+		AssertAction(t, instr, "JMP")
+		AssertAddressingMode(t, instr, ABSOLUTE)
+		AssertNumberOfBytes(t, instr, 3)
+	})
+
+	t.Run("JMP Indirect", func(t *testing.T) {
+		instr := Decode(0x6c)
+		AssertAction(t, instr, "JMP")
+		AssertAddressingMode(t, instr, INDIRECT)
+		AssertNumberOfBytes(t, instr, 3)
+	})
+}
+
 func TestDecodeLDA(t *testing.T) {
 	t.Run("LDA", func(t *testing.T) {
 		instr := Decode(0xa9)
