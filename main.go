@@ -1,15 +1,15 @@
 package main
 
+import (
+	"fmt"
+	"time"
+
+	"github.com/veandco/go-sdl2/sdl"
+)
+
 // In order to work, this needs to be loaded at 0x600 rather than the "normal" 0x8000.
 // See: https://github.com/bugzmanov/nes_ebook/blob/master/code/ch3.4/src/cpu.rs#L244-L258
 const MEM_ADDRESS = 0x600
-
-// a9 c0 aa e8 00
-func main() {
-	cpu := Cpu{}
-	cpu.ExecuteAtAddress(instr, MEM_ADDRESS)
-	cpu.PrintState()
-}
 
 // Example tetris game from: https://bugzmanov.github.io/nes_ebook/chapter_3_4.html
 var instr = []uint8{
@@ -33,4 +33,77 @@ var instr = []uint8{
 	0x1f, 0xc9, 0x1f, 0xf0, 0x01, 0x60, 0x4c, 0x35, 0x07, 0xa0, 0x00, 0xa5, 0xfe, 0x91, 0x00, 0x60,
 	0xa6, 0x03, 0xa9, 0x00, 0x81, 0x10, 0xa2, 0x00, 0xa9, 0x01, 0x81, 0x10, 0x60, 0xa2, 0x00, 0xea,
 	0xea, 0xca, 0xd0, 0xfb, 0x60,
+}
+
+func initSDL() *sdl.Window {
+	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
+		panic(err)
+	}
+
+	window, err := sdl.CreateWindow("nes", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED,
+		800, 600, sdl.WINDOW_SHOWN)
+	if err != nil {
+		panic(err)
+	}
+	return window
+}
+
+func main() {
+	window := initSDL()
+	defer sdl.Quit()
+	defer window.Destroy()
+
+	surface, err := window.GetSurface()
+	if err != nil {
+		panic(err)
+	}
+	surface.FillRect(nil, 0)
+
+	rect := sdl.Rect{0, 0, 200, 200}
+	surface.FillRect(&rect, 0xff110000)
+	window.UpdateSurface()
+
+	cpu := Cpu{}
+	cpu.LoadAtAddress(instr, MEM_ADDRESS)
+
+	startTime := time.Now()
+	lastDrawTime := time.Now()
+	running := true
+	steps := 0
+	draws := 0
+
+	for running && !cpu.Status.Break {
+		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
+			switch event.(type) {
+			case *sdl.QuitEvent:
+				println("Quit")
+				running = false
+				break
+			}
+		}
+
+		cpu.Step()
+		steps += 1
+
+		// Cap at 60 fps.
+		elapsedTime := time.Since(lastDrawTime).Microseconds()
+		if float64(elapsedTime) > float64(1000000.0/60.0) {
+			surface.FillRect(&rect, 0xff110000)
+			window.UpdateSurface()
+			draws += 1
+			lastDrawTime = time.Now()
+		}
+	}
+
+	// For short executions, these numbers might be surprising.
+	// I've found that the first event handling loop and last event handling loop
+	// take a long time (up to 300ms). This skews the overall time especially
+	// badly on short runs. As the overall run increases, this impact is lessened and
+	// the fps approaches 60 as it should. I tried various hacks to work around it, but
+	// in the end I decided it wasn't worth it.
+	elapsedMS := time.Since(startTime).Milliseconds()
+	fmt.Printf("Cpu Steps: %d\n", steps)
+	fmt.Printf("Elapsed MS: %d\n", elapsedMS)
+	fmt.Printf("Frames Drawn: %d\n", draws)
+	fmt.Printf("FPS: %f\n", (float64(draws) / (float64(elapsedMS) / 1000.0)))
 }
