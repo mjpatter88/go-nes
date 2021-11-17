@@ -1285,7 +1285,7 @@ func TestLoad(t *testing.T) {
 		cpu := Cpu{}
 		programBytes := []uint8{0x01, 0x02, 0x03}
 		var startingAddress uint16 = 0x8000
-		cpu.load(programBytes, startingAddress)
+		cpu.LoadAtAddress(programBytes, startingAddress)
 
 		for i := 0; i < 3; i++ {
 			memAddress := startingAddress + uint16(i)
@@ -1297,7 +1297,7 @@ func TestLoad(t *testing.T) {
 	t.Run("Sets Program Reference in Memory", func(t *testing.T) {
 		cpu := Cpu{}
 		programBytes := []uint8{0x01, 0x02, 0x03}
-		cpu.load(programBytes, 0x08000)
+		cpu.LoadAtAddress(programBytes, 0x08000)
 
 		value := cpu.readMemory_u16(0xfffc)
 		if value != 0x8000 {
