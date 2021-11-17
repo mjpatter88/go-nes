@@ -33,7 +33,7 @@ func (c *Cpu) Execute(program []uint8) {
 	c.ExecuteAtAddress(program, DEFAULT_PROG_MEM_ADDRESS)
 }
 
-// Loads the program into memory  at the specified address and executes it
+// Loads the program into memory at the specified address and executes it
 func (c *Cpu) ExecuteAtAddress(program []uint8, address uint16) {
 	c.load(program, address)
 	c.reset()
@@ -43,125 +43,131 @@ func (c *Cpu) ExecuteAtAddress(program []uint8, address uint16) {
 func (c *Cpu) run() {
 
 	for !c.Status.Break {
-
-		opcode := c.readMemory(c.ProgramCounter)
-		instr := Decode(opcode)
-
-		didJump := false
-		var param uint16
-
-		switch instr.AddressingMode {
-		case IMPLICIT:
-			param = 0
-		case ABSOLUTE:
-			param = c.AbsoluteMode()
-		case ABSOLUTE_X:
-			param = c.AbsoluteXMode()
-		case ABSOLUTE_Y:
-			param = c.AbsoluteYMode()
-		case ZERO:
-			param = c.ZeroMode()
-		case ZERO_X:
-			param = c.ZeroXMode()
-		case ZERO_Y:
-			panic(fmt.Errorf("unsuppored addressing mode %b", instr.AddressingMode))
-		case IMMEDIATE:
-			param = c.ImmediateMode()
-		case RELATIVE:
-			param = c.RelativeMode()
-		case INDIRECT:
-			param = c.IndirectMode()
-		case INDIRECT_X:
-			param = c.IndirectXMode()
-		case INDIRECT_Y:
-			param = c.IndirectYMode()
-		}
-
-		switch instr.Action {
-		case "BIT":
-			c.instrBIT(param)
-		case "LDA":
-			c.instrLDA(param)
-		case "LDX":
-			c.instrLDX(param)
-		case "LSR":
-			if instr.AddressingMode == ACCUMULATOR {
-				c.instrLSR_acc()
-			} else {
-				c.instrLSR(param)
-			}
-		case "LDY":
-			c.instrLDY(param)
-		case "AND":
-			c.instrAND(param)
-		case "ADC":
-			c.instrADC(param)
-		case "CMP":
-			c.instrCMP(param)
-		case "CPX":
-			c.instrCPX(param)
-		case "CPY":
-			c.instrCPY(param)
-		case "STA":
-			c.instrSTA(param)
-		case "TAX":
-			c.instrTAX()
-		case "TXA":
-			c.instrTXA()
-		case "TAY":
-			c.instrTAY()
-		case "TYA":
-			c.instrTYA()
-		case "DEX":
-			c.instrDEX()
-		case "INX":
-			c.instrINX()
-		case "DEY":
-			c.instrDEY()
-		case "INY":
-			c.instrINY()
-		case "INC":
-			c.instrINC(param)
-		case "JSR":
-			c.instrJSR(param)
-			didJump = true
-		case "RTS":
-			c.instrRTS(param)
-			didJump = true
-		case "BPL":
-			didJump = c.instrBPL(param)
-		case "BMI":
-			didJump = c.instrBMI(param)
-		case "BVC":
-			didJump = c.instrBVC(param)
-		case "BVS":
-			didJump = c.instrBVS(param)
-		case "BCC":
-			didJump = c.instrBCC(param)
-		case "BCS":
-			didJump = c.instrBCS(param)
-		case "BEQ":
-			didJump = c.instrBEQ(param)
-		case "BNE":
-			didJump = c.instrBNE(param)
-		case "JMP":
-			c.instrJMP(param)
-			didJump = true
-		case "CLC":
-			c.instrCLC()
-		case "BRK":
-			c.Status.Break = true
-		case "NOP":
-			// Intentionally empty
-		default:
-			panic(fmt.Errorf("unsuppored opcode %#x at pc: %#x", opcode, c.ProgramCounter))
-		}
-
-		// Jump instructions are expected to manually update the program counter themselves
-		if !didJump {
-			c.ProgramCounter += uint16(instr.NumberOfBytes)
-		}
+		c.Step()
 	}
+}
+
+// Executes a single instruction.
+// TODO(mjpatter88): maybe return the number of cycles?
+func (c *Cpu) Step() {
+	opcode := c.readMemory(c.ProgramCounter)
+	instr := Decode(opcode)
+
+	didJump := false
+	var param uint16
+
+	switch instr.AddressingMode {
+	case IMPLICIT:
+		param = 0
+	case ABSOLUTE:
+		param = c.AbsoluteMode()
+	case ABSOLUTE_X:
+		param = c.AbsoluteXMode()
+	case ABSOLUTE_Y:
+		param = c.AbsoluteYMode()
+	case ZERO:
+		param = c.ZeroMode()
+	case ZERO_X:
+		param = c.ZeroXMode()
+	case ZERO_Y:
+		panic(fmt.Errorf("unsuppored addressing mode %b", instr.AddressingMode))
+	case IMMEDIATE:
+		param = c.ImmediateMode()
+	case RELATIVE:
+		param = c.RelativeMode()
+	case INDIRECT:
+		param = c.IndirectMode()
+	case INDIRECT_X:
+		param = c.IndirectXMode()
+	case INDIRECT_Y:
+		param = c.IndirectYMode()
+	}
+
+	switch instr.Action {
+	case "BIT":
+		c.instrBIT(param)
+	case "LDA":
+		c.instrLDA(param)
+	case "LDX":
+		c.instrLDX(param)
+	case "LSR":
+		if instr.AddressingMode == ACCUMULATOR {
+			c.instrLSR_acc()
+		} else {
+			c.instrLSR(param)
+		}
+	case "LDY":
+		c.instrLDY(param)
+	case "AND":
+		c.instrAND(param)
+	case "ADC":
+		c.instrADC(param)
+	case "CMP":
+		c.instrCMP(param)
+	case "CPX":
+		c.instrCPX(param)
+	case "CPY":
+		c.instrCPY(param)
+	case "STA":
+		c.instrSTA(param)
+	case "TAX":
+		c.instrTAX()
+	case "TXA":
+		c.instrTXA()
+	case "TAY":
+		c.instrTAY()
+	case "TYA":
+		c.instrTYA()
+	case "DEX":
+		c.instrDEX()
+	case "INX":
+		c.instrINX()
+	case "DEY":
+		c.instrDEY()
+	case "INY":
+		c.instrINY()
+	case "INC":
+		c.instrINC(param)
+	case "JSR":
+		c.instrJSR(param)
+		didJump = true
+	case "RTS":
+		c.instrRTS(param)
+		didJump = true
+	case "BPL":
+		didJump = c.instrBPL(param)
+	case "BMI":
+		didJump = c.instrBMI(param)
+	case "BVC":
+		didJump = c.instrBVC(param)
+	case "BVS":
+		didJump = c.instrBVS(param)
+	case "BCC":
+		didJump = c.instrBCC(param)
+	case "BCS":
+		didJump = c.instrBCS(param)
+	case "BEQ":
+		didJump = c.instrBEQ(param)
+	case "BNE":
+		didJump = c.instrBNE(param)
+	case "JMP":
+		c.instrJMP(param)
+		didJump = true
+	case "CLC":
+		c.instrCLC()
+	case "BRK":
+		c.Status.Break = true
+	case "NOP":
+		// Intentionally empty
+	default:
+		panic(fmt.Errorf("unsuppored opcode %#x at pc: %#x", opcode, c.ProgramCounter))
+	}
+
+	// Jump instructions are expected to manually update the program counter themselves
+	if !didJump {
+		c.ProgramCounter += uint16(instr.NumberOfBytes)
+	}
+
 }
 
 func (c *Cpu) PrintState() {
