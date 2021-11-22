@@ -13,6 +13,11 @@ const MEM_ADDRESS = 0x600
 
 const windowWidth = 640
 const windowHeight = 640
+const windowPositionX = 500
+const windowPositionY = 500
+
+// Target fps is 60 -> 1,000,000 / 60 = 16,666.666
+const usPerFrame = 16666
 
 // Example tetris game from: https://bugzmanov.github.io/nes_ebook/chapter_3_4.html
 var instr = []uint8{
@@ -43,15 +48,18 @@ func initSDL() (*sdl.Window, *sdl.Renderer) {
 		panic(err)
 	}
 
-	window, renderer, err := sdl.CreateWindowAndRenderer(
+	window, err := sdl.CreateWindow(
+		"6502 Tetris",
 		windowWidth,
 		windowHeight,
+		windowPositionX,
+		windowPositionY,
 		sdl.WINDOW_SHOWN,
 	)
 	if err != nil {
 		panic(err)
 	}
-	window.SetTitle("6502 Tetris")
+	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_PRESENTVSYNC)
 	if err != nil {
 		panic(err)
 	}
@@ -112,12 +120,12 @@ func main() {
 			}
 		}
 
-		// cpu.Step()
-		// steps += 1
+		cpu.Step()
+		steps += 1
 
 		// Cap at 60 fps.
-		elapsedTime := time.Since(lastDrawTime).Milliseconds()
-		if float64(elapsedTime) > float64(1000.0/60.0) {
+		elapsedTime := time.Since(lastDrawTime).Microseconds()
+		if elapsedTime > usPerFrame {
 			lastDrawTime = time.Now()
 			fillScreen(&screenBytes, &cpu, int(time.Since(startTime).Milliseconds()))
 			drawFrame(renderer, tex, &screenBytes)
