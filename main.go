@@ -11,6 +11,9 @@ import (
 // See: https://github.com/bugzmanov/nes_ebook/blob/master/code/ch3.4/src/cpu.rs#L244-L258
 const MEM_ADDRESS = 0x600
 
+const windowWidth = 640
+const windowHeight = 640
+
 // Example tetris game from: https://bugzmanov.github.io/nes_ebook/chapter_3_4.html
 var instr = []uint8{
 	0x20, 0x06, 0x06, 0x20, 0x38, 0x06, 0x20, 0x0d, 0x06, 0x20, 0x2a, 0x06, 0x60, 0xa9, 0x02, 0x85,
@@ -35,33 +38,43 @@ var instr = []uint8{
 	0xea, 0xca, 0xd0, 0xfb, 0x60,
 }
 
-func initSDL() *sdl.Window {
+func initSDL() (*sdl.Window, *sdl.Renderer) {
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		panic(err)
 	}
 
-	window, err := sdl.CreateWindow("nes", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED,
-		800, 600, sdl.WINDOW_SHOWN)
+	window, renderer, err := sdl.CreateWindowAndRenderer(
+		windowWidth,
+		windowHeight,
+		sdl.WINDOW_SHOWN,
+	)
 	if err != nil {
 		panic(err)
 	}
-	return window
+	window.SetTitle("6502 Tetris")
+	if err != nil {
+		panic(err)
+	}
+	return window, renderer
+
 }
 
 func main() {
-	window := initSDL()
-	defer sdl.Quit()
-	defer window.Destroy()
+	window, renderer := initSDL()
 
-	surface, err := window.GetSurface()
+	tex, err := renderer.CreateTexture(
+		uint32(sdl.PIXELFORMAT_RGBA32),
+		sdl.TEXTUREACCESS_STREAMING,
+		windowWidth,
+		windowHeight,
+	)
 	if err != nil {
 		panic(err)
 	}
-	surface.FillRect(nil, 0)
-
-	rect := sdl.Rect{0, 0, 200, 200}
-	surface.FillRect(&rect, 0xff110000)
-	window.UpdateSurface()
+	defer sdl.Quit()
+	defer window.Destroy()
+	defer renderer.Destroy()
+	var screenBytes = [windowWidth * windowHeight * 4]byte{}
 
 	cpu := Cpu{}
 	cpu.LoadAtAddress(instr, MEM_ADDRESS)
@@ -70,7 +83,24 @@ func main() {
 	lastDrawTime := time.Now()
 	running := true
 	steps := 0
-	draws := 0
+	frameCount := 0
+	framesProcessed := 0
+
+	// Print fps each second
+	ticker := time.NewTicker(1 * time.Second)
+	done := make(chan bool)
+	go func() {
+		for {
+			select {
+			case <-done:
+				return
+			case <-ticker.C:
+				frames := frameCount - framesProcessed
+				framesProcessed = frameCount
+				fmt.Println("fps: ", frames)
+			}
+		}
+	}()
 
 	for running && !cpu.Status.Break {
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
@@ -82,16 +112,16 @@ func main() {
 			}
 		}
 
-		cpu.Step()
-		steps += 1
+		// cpu.Step()
+		// steps += 1
 
 		// Cap at 60 fps.
-		elapsedTime := time.Since(lastDrawTime).Microseconds()
-		if float64(elapsedTime) > float64(1000000.0/60.0) {
-			surface.FillRect(&rect, 0xff110000)
-			window.UpdateSurface()
-			draws += 1
+		elapsedTime := time.Since(lastDrawTime).Milliseconds()
+		if float64(elapsedTime) > float64(1000.0/60.0) {
 			lastDrawTime = time.Now()
+			fillScreen(&screenBytes, &cpu, int(time.Since(startTime).Milliseconds()))
+			drawFrame(renderer, tex, &screenBytes)
+			frameCount += 1
 		}
 	}
 
@@ -104,6 +134,34 @@ func main() {
 	elapsedMS := time.Since(startTime).Milliseconds()
 	fmt.Printf("Cpu Steps: %d\n", steps)
 	fmt.Printf("Elapsed MS: %d\n", elapsedMS)
-	fmt.Printf("Frames Drawn: %d\n", draws)
-	fmt.Printf("FPS: %f\n", (float64(draws) / (float64(elapsedMS) / 1000.0)))
+	fmt.Printf("Frames Drawn: %d\n", frameCount)
+	fmt.Printf("FPS: %f\n", (float64(frameCount) / (float64(elapsedMS) / 1000.0)))
+}
+
+func drawFrame(renderer *sdl.Renderer, texture *sdl.Texture, screen *[windowWidth * windowHeight * 4]byte) {
+	bytes, _, err := texture.Lock(nil)
+	if err != nil {
+		panic(err)
+	}
+	for i := 0; i < int(windowWidth*windowHeight*4); i++ {
+		bytes[i] = screen[i]
+	}
+	texture.Unlock()
+	rect := sdl.Rect{X: 0, Y: 0, W: int32(windowWidth), H: int32(windowHeight)}
+	err = renderer.Copy(texture, nil, &rect)
+	if err != nil {
+		panic(err)
+	}
+
+	renderer.Present()
+}
+
+// TODO: fill the screen based on the memroy contents and an arbitrary color pallete.
+func fillScreen(screenBytes *[windowWidth * windowHeight * 4]byte, cpu *Cpu, msSinceStart int) {
+	for i := 0; i < int(windowWidth*windowHeight*4); i += 4 {
+		screenBytes[i] = byte(msSinceStart + i)
+		screenBytes[i+1] = byte(msSinceStart + i)
+		screenBytes[i+2] = byte(msSinceStart + i)
+		screenBytes[i+3] = 0xff
+	}
 }
