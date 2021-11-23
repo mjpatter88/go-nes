@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"image/color"
 	"time"
 
 	"github.com/veandco/go-sdl2/sdl"
@@ -11,10 +12,16 @@ import (
 // See: https://github.com/bugzmanov/nes_ebook/blob/master/code/ch3.4/src/cpu.rs#L244-L258
 const MEM_ADDRESS = 0x600
 
-const windowWidth = 640
-const windowHeight = 640
+const VIDEO_MEM_ADDRESS = 0x200
+
+// TODO(mjpatter88): make the window 640x640 and scale the 32x32 nes cpu video output to fill it
+const windowWidth = 32
+const windowHeight = 32
 const windowPositionX = 500
 const windowPositionY = 500
+
+const pixelWidth = 32
+const pixelHeight = 32
 
 // Target fps is 60 -> 1,000,000 / 60 = 16,666.666
 const usPerFrame = 16666
@@ -43,6 +50,25 @@ var instr = []uint8{
 	0xea, 0xca, 0xd0, 0xfb, 0x60,
 }
 
+var colorPalette = map[uint8]color.RGBA{
+	0:  {0x00, 0x00, 0x00, 0xFF}, // Black
+	1:  {0xFF, 0xFF, 0xFF, 0xFF}, // White
+	2:  {0x51, 0x2D, 0x38, 0xFF}, // Mauve
+	3:  {0x29, 0x78, 0xA0, 0xFF}, // Blue
+	4:  {0xD3, 0x4F, 0x73, 0xFF}, // Redish
+	5:  {0xD7, 0xAF, 0x70, 0xFF}, // Yellowish
+	6:  {0xFF, 0x78, 0x5A, 0xFF}, // Orange
+	7:  {0xCC, 0x97, 0x8E, 0xFF}, // Brown
+	8:  {0x7C, 0xEA, 0x9C, 0xFF}, // Light Green
+	9:  {0xE2, 0x4E, 0x1B, 0xFF}, // Red
+	10: {0x00, 0x4E, 0x98, 0xFF}, // Royal Blue
+	11: {0xA5, 0xFF, 0xD6, 0xFF}, // Marine
+	12: {0x94, 0xFB, 0xAB, 0xFF}, // Mint
+	13: {0x89, 0x80, 0xF5, 0xFF}, // Purple
+	14: {0xB5, 0x65, 0x76, 0xFF}, // Rose
+	15: {0xF8, 0x8D, 0xAD, 0xFF}, // Pink
+}
+
 func initSDL() (*sdl.Window, *sdl.Renderer) {
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		panic(err)
@@ -50,10 +76,10 @@ func initSDL() (*sdl.Window, *sdl.Renderer) {
 
 	window, err := sdl.CreateWindow(
 		"6502 Tetris",
-		windowWidth,
-		windowHeight,
 		windowPositionX,
 		windowPositionY,
+		windowWidth,
+		windowHeight,
 		sdl.WINDOW_SHOWN,
 	)
 	if err != nil {
@@ -127,10 +153,13 @@ func main() {
 		elapsedTime := time.Since(lastDrawTime).Microseconds()
 		if elapsedTime > usPerFrame {
 			lastDrawTime = time.Now()
-			fillScreen(&screenBytes, &cpu, int(time.Since(startTime).Milliseconds()))
+			fillScreen(&screenBytes, &cpu)
 			drawFrame(renderer, tex, &screenBytes)
 			frameCount += 1
 		}
+
+		// TODO(mjpatter88): think about how to actually manage frequency rather than harcoding a delay here.
+		time.Sleep(100 * time.Microsecond)
 	}
 
 	// For short executions, these numbers might be surprising.
@@ -164,12 +193,14 @@ func drawFrame(renderer *sdl.Renderer, texture *sdl.Texture, screen *[windowWidt
 	renderer.Present()
 }
 
-// TODO: fill the screen based on the memroy contents and an arbitrary color pallete.
-func fillScreen(screenBytes *[windowWidth * windowHeight * 4]byte, cpu *Cpu, msSinceStart int) {
-	for i := 0; i < int(windowWidth*windowHeight*4); i += 4 {
-		screenBytes[i] = byte(msSinceStart + i)
-		screenBytes[i+1] = byte(msSinceStart + i)
-		screenBytes[i+2] = byte(msSinceStart + i)
-		screenBytes[i+3] = 0xff
+// Use the nes cpu video memory to render the display based on an arbitrary color palette
+func fillScreen(screenBytes *[windowWidth * windowHeight * 4]byte, cpu *Cpu) {
+	// TODO(mjpatter88): Eventually each pixel of cpu video memory should correspond to a 20x20 square of pixels
+	for i := 0; i < int(pixelWidth*pixelHeight); i += 1 {
+		color := colorPalette[cpu.readMemory(uint16(VIDEO_MEM_ADDRESS+i))]
+		screenBytes[i*4] = color.R
+		screenBytes[(i*4)+1] = color.G
+		screenBytes[(i*4)+2] = color.B
+		screenBytes[(i*4)+3] = color.A
 	}
 }
