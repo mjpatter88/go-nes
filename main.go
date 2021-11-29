@@ -14,6 +14,8 @@ import (
 const MEM_ADDRESS = 0x600
 
 const VIDEO_MEM_ADDRESS = 0x200
+const RANDOM_NUM_MEM_ADDRESS = 0xFE
+const INPUT_MEM_ADDRESS = 0xFF
 
 // TODO(mjpatter88): make the window 640x640 and scale the 32x32 nes cpu video output to fill it
 const windowWidth = 32
@@ -142,10 +144,26 @@ func main() {
 
 	for running && !cpu.Status.Break {
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-			switch event.(type) {
+			switch t := event.(type) {
 			case *sdl.QuitEvent:
 				println("Quit")
 				running = false
+				break
+			case *sdl.KeyboardEvent:
+				switch t.Keysym.Sym {
+				case sdl.K_w:
+					cpu.writeMemory(INPUT_MEM_ADDRESS, 0x77)
+					break
+				case sdl.K_s:
+					cpu.writeMemory(INPUT_MEM_ADDRESS, 0x73)
+					break
+				case sdl.K_d:
+					cpu.writeMemory(INPUT_MEM_ADDRESS, 0x64)
+					break
+				case sdl.K_a:
+					cpu.writeMemory(INPUT_MEM_ADDRESS, 0x61)
+					break
+				}
 				break
 			}
 		}
@@ -153,7 +171,7 @@ func main() {
 		// We need a random # between 1 and 15 (inclusive)
 		// Intn returns a number in a half open interval [0, n), so we
 		// need to add 1 to make the lower bound 1.
-		cpu.writeMemory(0xFE, uint8(r1.Intn(15)+1))
+		cpu.writeMemory(RANDOM_NUM_MEM_ADDRESS, uint8(r1.Intn(15)+1))
 		cpu.Step()
 		steps += 1
 
