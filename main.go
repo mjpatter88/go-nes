@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/veandco/go-sdl2/sdl"
+	"math/rand"
 )
 
 // In order to work, this needs to be loaded at 0x600 rather than the "normal" 0x8000.
@@ -110,6 +111,9 @@ func main() {
 	defer renderer.Destroy()
 	var screenBytes = [windowWidth * windowHeight * 4]byte{}
 
+	s1 := rand.NewSource(time.Now().UnixNano())
+	r1 := rand.New(s1)
+
 	cpu := Cpu{}
 	cpu.LoadAtAddress(instr, MEM_ADDRESS)
 
@@ -146,6 +150,10 @@ func main() {
 			}
 		}
 
+		// We need a random # between 1 and 15 (inclusive)
+		// Intn returns a number in a half open interval [0, n), so we
+		// need to add 1 to make the lower bound 1.
+		cpu.writeMemory(0xFE, uint8(r1.Intn(15)+1))
 		cpu.Step()
 		steps += 1
 
