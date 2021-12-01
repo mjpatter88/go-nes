@@ -5,6 +5,7 @@ const (
 	BRK = 0x00
 	NOP = 0xea
 	CLC = 0x18
+	SEC = 0x38
 	JSR = 0x20
 	RTS = 0x60
 
@@ -146,6 +147,7 @@ var instructionMap = map[uint8]Instruction{
 	0x00: {"BRK", IMPLICIT, 1},
 	0xea: {"NOP", IMPLICIT, 1},
 	0x18: {"CLC", IMPLICIT, 1},
+	0x38: {"SEC", IMPLICIT, 1},
 	0x20: {"JSR", ABSOLUTE, 3},
 	0x24: {"BIT", ZERO, 2},
 	0x2c: {"BIT", ABSOLUTE, 3},

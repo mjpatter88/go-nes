@@ -171,6 +171,8 @@ func (c *Cpu) Step() {
 		didJump = true
 	case "CLC":
 		c.instrCLC()
+	case "SEC":
+		c.instrSEC()
 	case "BRK":
 		c.Status.Break = true
 	case "NOP":
@@ -395,6 +397,10 @@ func (c *Cpu) instrDEY() {
 
 func (c *Cpu) instrCLC() {
 	c.Status.Carry = false
+}
+
+func (c *Cpu) instrSEC() {
+	c.Status.Carry = true
 }
 
 func (c *Cpu) instrJSR(param uint16) {

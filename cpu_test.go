@@ -924,6 +924,22 @@ func TestCLC(t *testing.T) {
 	})
 }
 
+func TestSEC(t *testing.T) {
+	t.Run("SEC", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.Status.Carry = true
+		cpu.instrSEC()
+
+		AssertCarry(t, &cpu, true)
+	})
+
+	t.Run("SEC Instruction", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.Execute([]uint8{SEC, BRK})
+		AssertCarry(t, &cpu, true)
+	})
+}
+
 func TestJSR(t *testing.T) {
 	cpu := Cpu{}
 	cpu.ProgramCounter = 0x8000
