@@ -142,6 +142,8 @@ func (c *Cpu) Step() {
 		c.instrINY()
 	case "INC":
 		c.instrINC(param)
+	case "DEC":
+		c.instrDEC(param)
 	case "JSR":
 		c.instrJSR(param)
 		didJump = true
@@ -313,6 +315,13 @@ func (c *Cpu) instrAND(param uint16) {
 func (c *Cpu) instrINC(param uint16) {
 	value := c.readMemory(param)
 	value += 1
+	c.updateFlags(value)
+	c.writeMemory(param, value)
+}
+
+func (c *Cpu) instrDEC(param uint16) {
+	value := c.readMemory(param)
+	value -= 1
 	c.updateFlags(value)
 	c.writeMemory(param, value)
 }

@@ -86,6 +86,11 @@ const (
 	INC_ABS    = 0xee
 	INC_ABS_X  = 0xfe
 
+	DEC_ZERO   = 0xc6
+	DEC_ZERO_X = 0xd6
+	DEC_ABS    = 0xce
+	DEC_ABS_X  = 0xde
+
 	TAX = 0xaa
 	TXA = 0x8a
 	DEX = 0xca
@@ -209,6 +214,10 @@ var instructionMap = map[uint8]Instruction{
 	0xf6: {"INC", ZERO_X, 2},
 	0xee: {"INC", ABSOLUTE, 3},
 	0xfe: {"INC", ABSOLUTE_X, 3},
+	0xc6: {"DEC", ZERO, 2},
+	0xd6: {"DEC", ZERO_X, 2},
+	0xce: {"DEC", ABSOLUTE, 3},
+	0xde: {"DEC", ABSOLUTE_X, 3},
 	0xaa: {"TAX", IMPLICIT, 1},
 	0x8a: {"TXA", IMPLICIT, 1},
 	0xca: {"DEX", IMPLICIT, 1},

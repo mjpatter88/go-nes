@@ -286,6 +286,48 @@ func TestINC(t *testing.T) {
 	})
 }
 
+func TestDEC(t *testing.T) {
+	t.Run("DEC", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0xaa] = 0xf1
+		cpu.instrDEC(0xaa)
+
+		AssertMemoryValue(t, &cpu, 0xaa, 0xf0)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, true)
+	})
+
+	t.Run("Zero flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0xaa] = 0x01
+		cpu.instrDEC(0xaa)
+
+		AssertMemoryValue(t, &cpu, 0xaa, 0x00)
+		AssertZero(t, &cpu, true)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("Negative flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0xaa] = 0x00
+		cpu.instrDEC(0xaa)
+
+		AssertMemoryValue(t, &cpu, 0xaa, 0xFF)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, true)
+	})
+
+	t.Run("DEC Instruction", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.memory[0xaa] = 0xf1
+		cpu.Execute([]uint8{DEC_ZERO, 0xaa, BRK})
+
+		AssertMemoryValue(t, &cpu, 0xaa, 0xf0)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, true)
+	})
+}
+
 func TestAND(t *testing.T) {
 	t.Run("AND", func(t *testing.T) {
 		cpu := Cpu{}
