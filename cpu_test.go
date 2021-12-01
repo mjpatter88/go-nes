@@ -427,6 +427,50 @@ func TestADC(t *testing.T) {
 	})
 }
 
+func TestSBC(t *testing.T) {
+	t.Run("SBC", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegA = 0x32
+		cpu.memory[0xaa] = 0x02
+		cpu.instrSBC(0xaa)
+
+		AssertRegisterA(t, &cpu, 0x30)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, false)
+		AssertOverflow(t, &cpu, false)
+		AssertCarry(t, &cpu, false)
+	})
+
+	t.Run("Zero flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegA = 0x01
+		cpu.memory[0xaa] = 0x01
+		cpu.instrSBC(0xaa)
+
+		AssertRegisterA(t, &cpu, 0x00)
+		AssertZero(t, &cpu, true)
+		AssertNegative(t, &cpu, false)
+	})
+
+	t.Run("Negative flag", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.RegA = 0x01
+		cpu.memory[0xaa] = 0x02
+		cpu.instrSBC(0xaa)
+
+		AssertRegisterA(t, &cpu, 0xff)
+		AssertZero(t, &cpu, false)
+		AssertNegative(t, &cpu, true)
+	})
+
+	t.Run("SBC Instruction", func(t *testing.T) {
+		cpu := Cpu{}
+		cpu.Execute([]uint8{LDA, 0x88, SBC, 0x1, BRK})
+
+		AssertRegisterA(t, &cpu, 0x87)
+	})
+}
+
 func TestCMP(t *testing.T) {
 	t.Run("CMP - equal", func(t *testing.T) {
 		cpu := Cpu{}

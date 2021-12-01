@@ -116,6 +116,8 @@ func (c *Cpu) Step() {
 		c.instrAND(param)
 	case "ADC":
 		c.instrADC(param)
+	case "SBC":
+		c.instrSBC(param)
 	case "CMP":
 		c.instrCMP(param)
 	case "CPX":
@@ -332,6 +334,13 @@ func (c *Cpu) instrADC(param uint16) {
 	// TODO(mjpatter) handle overflow and carry flags correctly
 	value := c.readMemory(param)
 	c.RegA += value
+	c.updateFlags(c.RegA)
+}
+
+func (c *Cpu) instrSBC(param uint16) {
+	// TODO(mjpatter) handle overflow and carry flags correctly
+	value := c.readMemory(param)
+	c.RegA -= value
 	c.updateFlags(c.RegA)
 }
 
