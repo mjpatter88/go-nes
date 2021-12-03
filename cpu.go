@@ -4,7 +4,10 @@ import "fmt"
 
 //Memory Addresses
 const (
-	DEFAULT_PROG_MEM_ADDRESS   = 0x8000
+	// TODO(mjpatter88): revisit this once roms are supported.
+	// Thid should be 0x8000, but that breaks since that address
+	// will be part of the ROM address space.
+	DEFAULT_PROG_MEM_ADDRESS   = 0x0200
 	PROG_REFERENCE_MEM_ADDRESS = 0xfffc
 )
 
@@ -25,8 +28,19 @@ type Cpu struct {
 	RegY           uint8
 	Status         StatusRegister
 	ProgramCounter uint16
-	memory         [0xffff]uint8
-	StackPointer   uint8
+	// TODO(mjpatter88): revist this. The cpu should probably just have a
+	// pointer to the bus instead of owning it. Maybe introduce an "nes"
+	// structure that owns the cpu, bus, ppu, etc?
+	bus          Bus
+	StackPointer uint8
+}
+
+func (c *Cpu) readMemory(index uint16) uint8 {
+	return c.bus.ReadMemory(index)
+}
+
+func (c *Cpu) writeMemory(index uint16, value uint8) {
+	c.bus.WriteMemory(index, value)
 }
 
 func (c *Cpu) Execute(program []uint8) {
@@ -43,15 +57,15 @@ func (c *Cpu) Load(program []uint8) {
 	c.LoadAtAddress(program, DEFAULT_PROG_MEM_ADDRESS)
 }
 
-// Loads the program into memory at the specified address but does not executes it
+// Loads the program into memory at the specified address but does not execute it
 func (c *Cpu) LoadAtAddress(program []uint8, address uint16) {
 	for index, byte := range program {
 		memIndex := address + uint16(index)
-		c.memory[memIndex] = byte
+		c.bus.WriteMemory(memIndex, byte)
 	}
 	// nes spec says to write program memory address into mem address 0xFFFC
 	// this value is then read into the program counter on system reset
-	c.writeMemory_u16(PROG_REFERENCE_MEM_ADDRESS, address)
+	c.bus.WriteMemory_u16(PROG_REFERENCE_MEM_ADDRESS, address)
 	c.reset()
 }
 
@@ -64,7 +78,7 @@ func (c *Cpu) run() {
 // Executes a single instruction.
 // TODO(mjpatter88): maybe return the number of cycles?
 func (c *Cpu) Step() {
-	opcode := c.readMemory(c.ProgramCounter)
+	opcode := c.bus.ReadMemory(c.ProgramCounter)
 	instr := Decode(opcode)
 
 	didJump := false
@@ -200,33 +214,8 @@ func (c *Cpu) reset() {
 	c.resetStatus()
 	c.RegA = 0
 	c.RegX = 0
-	c.ProgramCounter = c.readMemory_u16(PROG_REFERENCE_MEM_ADDRESS)
+	c.ProgramCounter = c.bus.ReadMemory_u16(PROG_REFERENCE_MEM_ADDRESS)
 	c.StackPointer = 0xff
-}
-
-func (c *Cpu) readMemory(index uint16) uint8 {
-	return c.memory[index]
-}
-
-func (c *Cpu) writeMemory(index uint16, value uint8) {
-	c.memory[index] = value
-}
-
-// nes is little-endian so 16-bit values read from memory need to handle this byte order.
-// NOTE: this just impacts the 16-bit values from memory, not the 16-bit memory index.
-func (c *Cpu) readMemory_u16(index uint16) uint16 {
-	firstByte := uint16(c.readMemory(index))
-	secondByte := uint16(c.readMemory(index + 1))
-	return (secondByte << 8) | (firstByte)
-}
-
-// nes is little-endian so 16-bit values written to memory need to handle this byte order.
-// NOTE: this just impacts the 16-bit values written to memory, not the 16-bit memory index.
-func (c *Cpu) writeMemory_u16(index uint16, value uint16) {
-	firstByte := (value) & 0xFF
-	secondByte := (value >> 8) & 0xFF
-	c.writeMemory(index, uint8(firstByte))
-	c.writeMemory(index+1, uint8(secondByte))
 }
 
 func (c *Cpu) updateFlags(result uint8) {
@@ -273,7 +262,7 @@ func (c *Cpu) instrBIT(param uint16) {
 	//
 	// See: https://www.masswerk.at/6502/6502_instruction_set.html#BIT
 
-	value := c.readMemory(param)
+	value := c.bus.ReadMemory(param)
 	result := value & c.RegA
 
 	c.Status.Zero = (result == 0)
@@ -282,25 +271,25 @@ func (c *Cpu) instrBIT(param uint16) {
 }
 
 func (c *Cpu) instrLDA(param uint16) {
-	c.RegA = c.readMemory(param)
+	c.RegA = c.bus.ReadMemory(param)
 	c.updateFlags(c.RegA)
 }
 
 func (c *Cpu) instrLDX(param uint16) {
-	c.RegX = c.readMemory(param)
+	c.RegX = c.bus.ReadMemory(param)
 	c.updateFlags(c.RegX)
 }
 
 func (c *Cpu) instrLDY(param uint16) {
-	c.RegY = c.readMemory(param)
+	c.RegY = c.bus.ReadMemory(param)
 	c.updateFlags(c.RegY)
 }
 
 func (c *Cpu) instrLSR(param uint16) {
-	value := c.readMemory(param)
+	value := c.bus.ReadMemory(param)
 	c.Status.Carry = (value & 0x01) != 0
 	value = value >> 1
-	c.writeMemory(param, value)
+	c.bus.WriteMemory(param, value)
 	c.updateFlags(value)
 }
 
@@ -311,56 +300,56 @@ func (c *Cpu) instrLSR_acc() {
 }
 
 func (c *Cpu) instrAND(param uint16) {
-	value := c.readMemory(param)
+	value := c.bus.ReadMemory(param)
 	c.RegA &= value
 	c.updateFlags(c.RegA)
 }
 
 func (c *Cpu) instrINC(param uint16) {
-	value := c.readMemory(param)
+	value := c.bus.ReadMemory(param)
 	value += 1
 	c.updateFlags(value)
-	c.writeMemory(param, value)
+	c.bus.WriteMemory(param, value)
 }
 
 func (c *Cpu) instrDEC(param uint16) {
-	value := c.readMemory(param)
+	value := c.bus.ReadMemory(param)
 	value -= 1
 	c.updateFlags(value)
-	c.writeMemory(param, value)
+	c.bus.WriteMemory(param, value)
 }
 
 func (c *Cpu) instrADC(param uint16) {
 	// TODO(mjpatter) handle overflow and carry flags correctly
-	value := c.readMemory(param)
+	value := c.bus.ReadMemory(param)
 	c.RegA += value
 	c.updateFlags(c.RegA)
 }
 
 func (c *Cpu) instrSBC(param uint16) {
 	// TODO(mjpatter) handle overflow and carry flags correctly
-	value := c.readMemory(param)
+	value := c.bus.ReadMemory(param)
 	c.RegA -= value
 	c.updateFlags(c.RegA)
 }
 
 func (c *Cpu) instrCMP(param uint16) {
-	value := c.readMemory(param)
+	value := c.bus.ReadMemory(param)
 	c.compare(c.RegA, value)
 }
 
 func (c *Cpu) instrCPX(param uint16) {
-	value := c.readMemory(param)
+	value := c.bus.ReadMemory(param)
 	c.compare(c.RegX, value)
 }
 
 func (c *Cpu) instrCPY(param uint16) {
-	value := c.readMemory(param)
+	value := c.bus.ReadMemory(param)
 	c.compare(c.RegY, value)
 }
 
 func (c *Cpu) instrSTA(param uint16) {
-	c.writeMemory(param, c.RegA)
+	c.bus.WriteMemory(param, c.RegA)
 	c.resetStatus()
 }
 
@@ -417,7 +406,7 @@ func (c *Cpu) instrJSR(param uint16) {
 	index := 0x0100 | uint16((c.StackPointer - 1))
 	// JSR length is 3 and we want to store the address of the next insturction - 1.
 	value := c.ProgramCounter + 3 - 1
-	c.writeMemory_u16(index, value)
+	c.bus.WriteMemory_u16(index, value)
 
 	c.StackPointer -= 2
 	c.ProgramCounter = param
@@ -426,7 +415,7 @@ func (c *Cpu) instrJSR(param uint16) {
 func (c *Cpu) instrRTS(param uint16) {
 	// Read two bytes from the top of the stack.
 	index := 0x0100 | uint16((c.StackPointer + 1))
-	value := c.readMemory_u16(index)
+	value := c.bus.ReadMemory_u16(index)
 	c.StackPointer += 2
 	c.ProgramCounter = value + 1
 }
@@ -515,7 +504,7 @@ func (c *Cpu) ImmediateMode() uint16 {
 
 func (c *Cpu) ZeroMode() uint16 {
 	// Use the value stored directly after the opcode as an index into memory and return the value stored there.
-	address := c.readMemory(c.ProgramCounter + 1)
+	address := c.bus.ReadMemory(c.ProgramCounter + 1)
 	return uint16(address)
 }
 
@@ -524,7 +513,7 @@ func (c *Cpu) ZeroXMode() uint16 {
 	// add the value in the x register.
 
 	// Address is a byte and the overflow/wrap behavior is intentional.
-	address := c.readMemory(c.ProgramCounter + 1)
+	address := c.bus.ReadMemory(c.ProgramCounter + 1)
 	address += c.RegX
 	return uint16(address)
 }
@@ -533,7 +522,7 @@ func (c *Cpu) AbsoluteMode() uint16 {
 	// Use the two bytes stored directly after the opcode as an index into memory.
 	// Treat them as litte endian (LSB first).
 
-	address := c.readMemory_u16(c.ProgramCounter + 1)
+	address := c.bus.ReadMemory_u16(c.ProgramCounter + 1)
 	return address
 }
 
@@ -541,7 +530,7 @@ func (c *Cpu) AbsoluteXMode() uint16 {
 	// Same as AbsoluteMode but the value in the X register is added to
 	// the memory address.
 
-	address := c.readMemory_u16(c.ProgramCounter + 1)
+	address := c.bus.ReadMemory_u16(c.ProgramCounter + 1)
 	address += uint16(c.RegX)
 	return address
 }
@@ -550,7 +539,7 @@ func (c *Cpu) AbsoluteYMode() uint16 {
 	// Same as AbsoluteMode but the value in the Y register is added to
 	// the memory address.
 
-	address := c.readMemory_u16(c.ProgramCounter + 1)
+	address := c.bus.ReadMemory_u16(c.ProgramCounter + 1)
 	address += uint16(c.RegY)
 	return address
 }
@@ -561,11 +550,11 @@ func (c *Cpu) IndirectMode() uint16 {
 	// this index and return it.
 
 	// address is two bytes.
-	address := c.readMemory_u16(c.ProgramCounter + 1)
+	address := c.bus.ReadMemory_u16(c.ProgramCounter + 1)
 
 	// Use the address to read a value from memory.
 	// Value is two bytes little endian (LSB first)
-	value := c.readMemory_u16(uint16(address))
+	value := c.bus.ReadMemory_u16(uint16(address))
 	return value
 }
 
@@ -575,12 +564,12 @@ func (c *Cpu) IndirectXMode() uint16 {
 	// Lookup the value stored in memory at this index and return it.
 
 	// Initial address is a byte and the overflow/wrap behavior is intentional.
-	index := c.readMemory(c.ProgramCounter + 1)
+	index := c.bus.ReadMemory(c.ProgramCounter + 1)
 	index += c.RegX
 
 	// Use the initial address to read an address from memory.
 	// Address is two bytes little endian (LSB first)
-	address := c.readMemory_u16(uint16(index))
+	address := c.bus.ReadMemory_u16(uint16(index))
 	return address
 }
 
@@ -588,12 +577,12 @@ func (c *Cpu) IndirectYMode() uint16 {
 	// Same as IndirectXMode but with the Y register.
 
 	// Initial address is a byte and the overflow/wrap behavior is intentional.
-	index := c.readMemory(c.ProgramCounter + 1)
+	index := c.bus.ReadMemory(c.ProgramCounter + 1)
 	index += c.RegY
 
 	// Use the initial address to read an address from memory.
 	// Address is two bytes little endian (LSB first)
-	address := c.readMemory_u16(uint16(index))
+	address := c.bus.ReadMemory_u16(uint16(index))
 	return address
 }
 
@@ -603,7 +592,7 @@ func (c *Cpu) RelativeMode() uint16 {
 	//
 	// The offset can be positive or negative, so we need to use two's complement addition.
 	// There may be a better way, but this series of casts does the trick.
-	offset := c.readMemory(c.ProgramCounter + 1)
+	offset := c.bus.ReadMemory(c.ProgramCounter + 1)
 	return uint16(int16(c.ProgramCounter)+int16(int8(offset))) + 2
 }
 

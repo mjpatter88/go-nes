@@ -22,7 +22,7 @@ func TestBIT(t *testing.T) {
 	t.Run("BIT Zero", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegA = 0x00
-		cpu.memory[0xaa] = 0xff
+		cpu.bus.cpuVRam[0xaa] = 0xff
 		cpu.instrBIT(0xaa)
 
 		AssertZero(t, &cpu, true)
@@ -31,7 +31,7 @@ func TestBIT(t *testing.T) {
 	t.Run("BIT Non-Zero", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegA = 0x4a
-		cpu.memory[0xaa] = 0x4a
+		cpu.bus.cpuVRam[0xaa] = 0x4a
 		cpu.instrBIT(0xaa)
 
 		AssertZero(t, &cpu, false)
@@ -40,7 +40,7 @@ func TestBIT(t *testing.T) {
 	t.Run("Negative flag", func(t *testing.T) {
 		// Negative flag is set to the value of bit 7 of the operand
 		cpu := Cpu{}
-		cpu.memory[0xaa] = 0x80
+		cpu.bus.cpuVRam[0xaa] = 0x80
 		cpu.instrBIT(0xaa)
 
 		AssertNegative(t, &cpu, true)
@@ -49,7 +49,7 @@ func TestBIT(t *testing.T) {
 	t.Run("Overflow flag", func(t *testing.T) {
 		// Overflow flag is set to the value of bit 6 of the operand
 		cpu := Cpu{}
-		cpu.memory[0xaa] = 0x40
+		cpu.bus.cpuVRam[0xaa] = 0x40
 		cpu.instrBIT(0xaa)
 
 		AssertOverflow(t, &cpu, true)
@@ -57,7 +57,7 @@ func TestBIT(t *testing.T) {
 
 	t.Run("BIT Instruction", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0xaa] = 0xff
+		cpu.bus.cpuVRam[0xaa] = 0xff
 		cpu.Execute([]uint8{BIT_ZERO, 0xaa, BRK})
 
 		AssertZero(t, &cpu, true)
@@ -69,7 +69,7 @@ func TestBIT(t *testing.T) {
 func TestLDA(t *testing.T) {
 	t.Run("LDA", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0xaa] = 0x4a
+		cpu.bus.cpuVRam[0xaa] = 0x4a
 		cpu.instrLDA(0xaa)
 
 		AssertRegisterA(t, &cpu, 0x4a)
@@ -79,7 +79,7 @@ func TestLDA(t *testing.T) {
 
 	t.Run("Zero flag", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0xaa] = 0x00
+		cpu.bus.cpuVRam[0xaa] = 0x00
 		cpu.instrLDA(0xaa)
 
 		AssertRegisterA(t, &cpu, 0x00)
@@ -89,7 +89,7 @@ func TestLDA(t *testing.T) {
 
 	t.Run("Negative flag", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0xaa] = 0xf0
+		cpu.bus.cpuVRam[0xaa] = 0xf0
 		cpu.instrLDA(0xaa)
 
 		AssertRegisterA(t, &cpu, 0xf0)
@@ -110,7 +110,7 @@ func TestLDA(t *testing.T) {
 func TestLDX(t *testing.T) {
 	t.Run("LDX", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0xaa] = 0x4a
+		cpu.bus.cpuVRam[0xaa] = 0x4a
 		cpu.instrLDX(0xaa)
 
 		AssertRegisterX(t, &cpu, 0x4a)
@@ -120,7 +120,7 @@ func TestLDX(t *testing.T) {
 
 	t.Run("Zero flag", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0xaa] = 0x00
+		cpu.bus.cpuVRam[0xaa] = 0x00
 		cpu.instrLDX(0xaa)
 
 		AssertRegisterX(t, &cpu, 0x00)
@@ -130,7 +130,7 @@ func TestLDX(t *testing.T) {
 
 	t.Run("Negative flag", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0xaa] = 0xf0
+		cpu.bus.cpuVRam[0xaa] = 0xf0
 		cpu.instrLDX(0xaa)
 
 		AssertRegisterX(t, &cpu, 0xf0)
@@ -151,7 +151,7 @@ func TestLDX(t *testing.T) {
 func TestLDY(t *testing.T) {
 	t.Run("LDY", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0xaa] = 0x4a
+		cpu.bus.cpuVRam[0xaa] = 0x4a
 		cpu.instrLDY(0xaa)
 
 		AssertRegisterY(t, &cpu, 0x4a)
@@ -161,7 +161,7 @@ func TestLDY(t *testing.T) {
 
 	t.Run("Zero flag", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0xaa] = 0x00
+		cpu.bus.cpuVRam[0xaa] = 0x00
 		cpu.instrLDY(0xaa)
 
 		AssertRegisterY(t, &cpu, 0x00)
@@ -171,7 +171,7 @@ func TestLDY(t *testing.T) {
 
 	t.Run("Negative flag", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0xaa] = 0xf0
+		cpu.bus.cpuVRam[0xaa] = 0xf0
 		cpu.instrLDY(0xaa)
 
 		AssertRegisterY(t, &cpu, 0xf0)
@@ -214,7 +214,7 @@ func TestLSR(t *testing.T) {
 
 	t.Run("LSR Zero Page", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0xaa] = 0xff
+		cpu.bus.cpuVRam[0xaa] = 0xff
 		cpu.instrLSR(0xaa)
 
 		AssertMemoryValue(t, &cpu, 0xaa, 0x7f)
@@ -234,7 +234,7 @@ func TestLSR(t *testing.T) {
 
 	t.Run("LSR Zero Page Instruction", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0xaa] = 0xff
+		cpu.bus.cpuVRam[0xaa] = 0xff
 		cpu.Execute([]uint8{LSR_ZERO, 0xaa, BRK})
 
 		AssertMemoryValue(t, &cpu, 0xaa, 0x7f)
@@ -247,7 +247,7 @@ func TestLSR(t *testing.T) {
 func TestINC(t *testing.T) {
 	t.Run("INC", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0xaa] = 0xf1
+		cpu.bus.cpuVRam[0xaa] = 0xf1
 		cpu.instrINC(0xaa)
 
 		AssertMemoryValue(t, &cpu, 0xaa, 0xf2)
@@ -257,7 +257,7 @@ func TestINC(t *testing.T) {
 
 	t.Run("Zero flag", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0xaa] = 0xff
+		cpu.bus.cpuVRam[0xaa] = 0xff
 		cpu.instrINC(0xaa)
 
 		AssertMemoryValue(t, &cpu, 0xaa, 0x00)
@@ -267,7 +267,7 @@ func TestINC(t *testing.T) {
 
 	t.Run("Negative flag", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0xaa] = 0x7f
+		cpu.bus.cpuVRam[0xaa] = 0x7f
 		cpu.instrINC(0xaa)
 
 		AssertMemoryValue(t, &cpu, 0xaa, 0x80)
@@ -277,7 +277,7 @@ func TestINC(t *testing.T) {
 
 	t.Run("INC Instruction", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0xaa] = 0xf1
+		cpu.bus.cpuVRam[0xaa] = 0xf1
 		cpu.Execute([]uint8{INC_ZERO, 0xaa, BRK})
 
 		AssertMemoryValue(t, &cpu, 0xaa, 0xf2)
@@ -289,7 +289,7 @@ func TestINC(t *testing.T) {
 func TestDEC(t *testing.T) {
 	t.Run("DEC", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0xaa] = 0xf1
+		cpu.bus.cpuVRam[0xaa] = 0xf1
 		cpu.instrDEC(0xaa)
 
 		AssertMemoryValue(t, &cpu, 0xaa, 0xf0)
@@ -299,7 +299,7 @@ func TestDEC(t *testing.T) {
 
 	t.Run("Zero flag", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0xaa] = 0x01
+		cpu.bus.cpuVRam[0xaa] = 0x01
 		cpu.instrDEC(0xaa)
 
 		AssertMemoryValue(t, &cpu, 0xaa, 0x00)
@@ -309,7 +309,7 @@ func TestDEC(t *testing.T) {
 
 	t.Run("Negative flag", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0xaa] = 0x00
+		cpu.bus.cpuVRam[0xaa] = 0x00
 		cpu.instrDEC(0xaa)
 
 		AssertMemoryValue(t, &cpu, 0xaa, 0xFF)
@@ -319,7 +319,7 @@ func TestDEC(t *testing.T) {
 
 	t.Run("DEC Instruction", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0xaa] = 0xf1
+		cpu.bus.cpuVRam[0xaa] = 0xf1
 		cpu.Execute([]uint8{DEC_ZERO, 0xaa, BRK})
 
 		AssertMemoryValue(t, &cpu, 0xaa, 0xf0)
@@ -332,7 +332,7 @@ func TestAND(t *testing.T) {
 	t.Run("AND", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegA = 0x0f
-		cpu.memory[0xaa] = 0xff
+		cpu.bus.cpuVRam[0xaa] = 0xff
 		cpu.instrAND(0xaa)
 
 		AssertRegisterA(t, &cpu, 0x0f)
@@ -343,7 +343,7 @@ func TestAND(t *testing.T) {
 	t.Run("Zero flag", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegA = 0x0f
-		cpu.memory[0xaa] = 0x00
+		cpu.bus.cpuVRam[0xaa] = 0x00
 		cpu.instrAND(0xaa)
 
 		AssertRegisterA(t, &cpu, 0x00)
@@ -354,7 +354,7 @@ func TestAND(t *testing.T) {
 	t.Run("Negative flag", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegA = 0xff
-		cpu.memory[0xaa] = 0xff
+		cpu.bus.cpuVRam[0xaa] = 0xff
 		cpu.instrAND(0xaa)
 
 		AssertRegisterA(t, &cpu, 0xff)
@@ -376,7 +376,7 @@ func TestADC(t *testing.T) {
 	t.Run("ADC", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegA = 0x02
-		cpu.memory[0xaa] = 0x31
+		cpu.bus.cpuVRam[0xaa] = 0x31
 		cpu.instrADC(0xaa)
 
 		AssertRegisterA(t, &cpu, 0x33)
@@ -389,7 +389,7 @@ func TestADC(t *testing.T) {
 	t.Run("Zero flag", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegA = 0x00
-		cpu.memory[0xaa] = 0x00
+		cpu.bus.cpuVRam[0xaa] = 0x00
 		cpu.instrADC(0xaa)
 
 		AssertRegisterA(t, &cpu, 0x00)
@@ -400,7 +400,7 @@ func TestADC(t *testing.T) {
 	t.Run("Negative flag", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegA = 0xfa
-		cpu.memory[0xaa] = 0x01
+		cpu.bus.cpuVRam[0xaa] = 0x01
 		cpu.instrADC(0xaa)
 
 		AssertRegisterA(t, &cpu, 0xfb)
@@ -411,7 +411,7 @@ func TestADC(t *testing.T) {
 	t.Run("Overflow", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegA = 0xff
-		cpu.memory[0xaa] = 0x01
+		cpu.bus.cpuVRam[0xaa] = 0x01
 		cpu.instrADC(0xaa)
 
 		AssertRegisterA(t, &cpu, 0x00)
@@ -431,7 +431,7 @@ func TestSBC(t *testing.T) {
 	t.Run("SBC", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegA = 0x32
-		cpu.memory[0xaa] = 0x02
+		cpu.bus.cpuVRam[0xaa] = 0x02
 		cpu.instrSBC(0xaa)
 
 		AssertRegisterA(t, &cpu, 0x30)
@@ -444,7 +444,7 @@ func TestSBC(t *testing.T) {
 	t.Run("Zero flag", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegA = 0x01
-		cpu.memory[0xaa] = 0x01
+		cpu.bus.cpuVRam[0xaa] = 0x01
 		cpu.instrSBC(0xaa)
 
 		AssertRegisterA(t, &cpu, 0x00)
@@ -455,7 +455,7 @@ func TestSBC(t *testing.T) {
 	t.Run("Negative flag", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegA = 0x01
-		cpu.memory[0xaa] = 0x02
+		cpu.bus.cpuVRam[0xaa] = 0x02
 		cpu.instrSBC(0xaa)
 
 		AssertRegisterA(t, &cpu, 0xff)
@@ -475,7 +475,7 @@ func TestCMP(t *testing.T) {
 	t.Run("CMP - equal", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegA = 0x4a
-		cpu.memory[0xaa] = 0x4a
+		cpu.bus.cpuVRam[0xaa] = 0x4a
 		cpu.instrCMP(0xaa)
 
 		AssertZero(t, &cpu, true)
@@ -486,7 +486,7 @@ func TestCMP(t *testing.T) {
 	t.Run("CMP - regA less than", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegA = 0x0a
-		cpu.memory[0xaa] = 0x4a
+		cpu.bus.cpuVRam[0xaa] = 0x4a
 		cpu.instrCMP(0xaa)
 
 		AssertZero(t, &cpu, false)
@@ -497,7 +497,7 @@ func TestCMP(t *testing.T) {
 	t.Run("CMP - regA greater than", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegA = 0x5a
-		cpu.memory[0xaa] = 0x4a
+		cpu.bus.cpuVRam[0xaa] = 0x4a
 		cpu.instrCMP(0xaa)
 
 		AssertZero(t, &cpu, false)
@@ -520,7 +520,7 @@ func TestCPX(t *testing.T) {
 	t.Run("CPX - equal", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegX = 0x4a
-		cpu.memory[0xaa] = 0x4a
+		cpu.bus.cpuVRam[0xaa] = 0x4a
 		cpu.instrCPX(0xaa)
 
 		AssertZero(t, &cpu, true)
@@ -531,7 +531,7 @@ func TestCPX(t *testing.T) {
 	t.Run("CPX - regX less than", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegX = 0x0a
-		cpu.memory[0xaa] = 0x4a
+		cpu.bus.cpuVRam[0xaa] = 0x4a
 		cpu.instrCPX(0xaa)
 
 		AssertZero(t, &cpu, false)
@@ -542,7 +542,7 @@ func TestCPX(t *testing.T) {
 	t.Run("CPX - regX greater than", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegX = 0x5a
-		cpu.memory[0xaa] = 0x4a
+		cpu.bus.cpuVRam[0xaa] = 0x4a
 		cpu.instrCPX(0xaa)
 
 		AssertZero(t, &cpu, false)
@@ -565,7 +565,7 @@ func TestCPY(t *testing.T) {
 	t.Run("CPY - equal", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegY = 0x4a
-		cpu.memory[0xaa] = 0x4a
+		cpu.bus.cpuVRam[0xaa] = 0x4a
 		cpu.instrCPY(0xaa)
 
 		AssertZero(t, &cpu, true)
@@ -576,7 +576,7 @@ func TestCPY(t *testing.T) {
 	t.Run("CPY - regY less than", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegY = 0x0a
-		cpu.memory[0xaa] = 0x4a
+		cpu.bus.cpuVRam[0xaa] = 0x4a
 		cpu.instrCPY(0xaa)
 
 		AssertZero(t, &cpu, false)
@@ -587,7 +587,7 @@ func TestCPY(t *testing.T) {
 	t.Run("CPY - regY greater than", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.RegY = 0x5a
-		cpu.memory[0xaa] = 0x4a
+		cpu.bus.cpuVRam[0xaa] = 0x4a
 		cpu.instrCPY(0xaa)
 
 		AssertZero(t, &cpu, false)
@@ -986,14 +986,14 @@ func TestSEC(t *testing.T) {
 
 func TestJSR(t *testing.T) {
 	cpu := Cpu{}
-	cpu.ProgramCounter = 0x8000
+	cpu.ProgramCounter = 0x0200
 	cpu.StackPointer = 0x00ff
 	cpu.instrJSR(0x9000)
 
 	AssertProgramCounter(t, &cpu, 0x9000)
-	// 0x8000 + 3 (len of current instr) - 1 => 0x8002
+	// 0x0200 + 3 (len of current instr) - 1 => 0x0202
 	// MSB goes onto stack first then LSB second
-	AssertMemoryValue(t, &cpu, 0x01ff, 0x80)
+	AssertMemoryValue(t, &cpu, 0x01ff, 0x02)
 	AssertMemoryValue(t, &cpu, 0x01fe, 0x02)
 
 	AssertStackPointer(t, &cpu, 0x00fd)
@@ -1003,14 +1003,14 @@ func TestJSR(t *testing.T) {
 func TestAddressingModeInstructionExecution(t *testing.T) {
 	t.Run("Zero Page", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0x0000] = 0xee
+		cpu.bus.cpuVRam[0x0000] = 0xee
 		cpu.Execute([]uint8{LDA_ZERO, 0x00, BRK})
 		AssertRegisterA(t, &cpu, 0xee)
 	})
 
 	t.Run("Zero Page X", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0x00ff] = 0xee
+		cpu.bus.cpuVRam[0x00ff] = 0xee
 		// Load 0xfe into a, transfer to x, the load from (0xfe + 1) into a
 		cpu.Execute([]uint8{LDA, 0xfe, TAX, LDA_ZERO_X, 0x01, BRK})
 		AssertRegisterA(t, &cpu, 0xee)
@@ -1020,49 +1020,49 @@ func TestAddressingModeInstructionExecution(t *testing.T) {
 		// If the summed address overflows one byte, then it should wrap around.
 		// Ex: 0xff + 0x05 -> 0x04
 		cpu := Cpu{}
-		cpu.memory[0x0004] = 0xee
+		cpu.bus.cpuVRam[0x0004] = 0xee
 		cpu.Execute([]uint8{LDA, 0xff, TAX, LDA_ZERO_X, 0x05, BRK})
 		AssertRegisterA(t, &cpu, 0xee)
 	})
 
 	t.Run("Absolute", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0xccaa] = 0xee
+		cpu.bus.cpuVRam[0x01aa] = 0xee
 		// Remember little-endian applies to the absolute address
-		cpu.Execute([]uint8{LDA_ABS, 0xaa, 0xcc, BRK})
+		cpu.Execute([]uint8{LDA_ABS, 0xaa, 0x01, BRK})
 		AssertRegisterA(t, &cpu, 0xee)
 	})
 
 	t.Run("Absolute X", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0xccab] = 0xee
+		cpu.bus.cpuVRam[0x01ab] = 0xee
 		// Remember little-endian applies to the absolute address
-		cpu.Execute([]uint8{LDA, 0x01, TAX, LDA_ABS_X, 0xaa, 0xcc, BRK})
+		cpu.Execute([]uint8{LDA, 0x01, TAX, LDA_ABS_X, 0xaa, 0x01, BRK})
 		AssertRegisterA(t, &cpu, 0xee)
 	})
 
 	t.Run("Absolute Y", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0xccab] = 0xee
+		cpu.bus.cpuVRam[0x01ab] = 0xee
 		// Remember little-endian applies to the absolute address
-		cpu.Execute([]uint8{LDA, 0x01, TAY, LDA_ABS_Y, 0xaa, 0xcc, BRK})
+		cpu.Execute([]uint8{LDA, 0x01, TAY, LDA_ABS_Y, 0xaa, 0x01, BRK})
 		AssertRegisterA(t, &cpu, 0xee)
 	})
 
 	t.Run("Indirect X", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0x00fe] = 0xaa
-		cpu.memory[0x00ff] = 0xcc
-		cpu.memory[0xccaa] = 0xee
+		cpu.bus.cpuVRam[0x00fe] = 0xaa
+		cpu.bus.cpuVRam[0x00ff] = 0x01
+		cpu.bus.cpuVRam[0x01aa] = 0xee
 		cpu.Execute([]uint8{LDA, 0x01, TAX, LDA_IND_X, 0xfd, BRK})
 		AssertRegisterA(t, &cpu, 0xee)
 	})
 
 	t.Run("Indirect Y", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.memory[0x00fe] = 0xaa
-		cpu.memory[0x00ff] = 0xcc
-		cpu.memory[0xccaa] = 0xee
+		cpu.bus.cpuVRam[0x00fe] = 0xaa
+		cpu.bus.cpuVRam[0x00ff] = 0x01
+		cpu.bus.cpuVRam[0x01aa] = 0xee
 		cpu.Execute([]uint8{LDA, 0x01, TAY, LDA_IND_Y, 0xfd, BRK})
 		AssertRegisterA(t, &cpu, 0xee)
 	})
@@ -1073,7 +1073,8 @@ func TestJumpingInstructionExecution(t *testing.T) {
 	t.Run("JSR", func(t *testing.T) {
 		cpu := Cpu{}
 		// Jump to the INX instruction
-		cpu.Execute([]uint8{JSR, 0x05, 0x80, LDA, 0x05, INX, BRK})
+		// This assumes a starting address of 0x0200 so the address to jump to is 0x0205
+		cpu.Execute([]uint8{JSR, 0x05, 0x02, LDA, 0x05, INX, BRK})
 		AssertRegisterA(t, &cpu, 0x00)
 		AssertRegisterX(t, &cpu, 0x01)
 	})
@@ -1082,7 +1083,7 @@ func TestJumpingInstructionExecution(t *testing.T) {
 		cpu := Cpu{}
 		// Jump to the INX instruction and then return.
 		// Expect one INX to run and the LDA instr to run but nothing else.
-		cpu.Execute([]uint8{JSR, 0x06, 0x80, LDA, 0x05, BRK, INX, RTS, INX, BRK})
+		cpu.Execute([]uint8{JSR, 0x06, 0x02, LDA, 0x05, BRK, INX, RTS, INX, BRK})
 		AssertRegisterA(t, &cpu, 0x05)
 		AssertRegisterX(t, &cpu, 0x01)
 	})
@@ -1304,16 +1305,16 @@ func TestJMP(t *testing.T) {
 	})
 	t.Run("JMP Instruction - Absolute", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.Execute([]uint8{JMP_ABS, 0x34, 0x12, BRK})
+		cpu.Execute([]uint8{JMP_ABS, 0x34, 0x02, BRK})
 		// Assert jump target +1 since it will execute the following instruction which is 0x00 (BRK)
-		AssertProgramCounter(t, &cpu, 0x1235)
+		AssertProgramCounter(t, &cpu, 0x0235)
 	})
 
 	t.Run("JMP Instruction - Indirect", func(t *testing.T) {
 		cpu := Cpu{}
-		cpu.Execute([]uint8{JMP_IND, 0x03, 0x80, 0x34, 0x12, BRK})
+		cpu.Execute([]uint8{JMP_IND, 0x03, 0x02, 0x34, 0x02, BRK})
 		// Assert jump target +1 since it will execute the following instruction which is 0x00 (BRK)
-		AssertProgramCounter(t, &cpu, 0x1235)
+		AssertProgramCounter(t, &cpu, 0x0235)
 	})
 }
 
@@ -1325,7 +1326,7 @@ func TestCompareAndBranch(t *testing.T) {
 		cpu.Execute([]uint8{LDA, 0x05, CMP, 0x05, BEQ, 0x01, INX, BRK})
 		AssertRegisterX(t, &cpu, 0x00)
 
-		AssertProgramCounter(t, &cpu, 0x8008)
+		AssertProgramCounter(t, &cpu, 0x0208)
 	})
 	t.Run("CMP + BEQ - No Branch", func(t *testing.T) {
 		cpu := Cpu{}
@@ -1333,7 +1334,7 @@ func TestCompareAndBranch(t *testing.T) {
 		cpu.Execute([]uint8{LDA, 0x05, CMP, 0x06, BEQ, 0x01, INX, BRK})
 		AssertRegisterX(t, &cpu, 0x01)
 
-		AssertProgramCounter(t, &cpu, 0x8008)
+		AssertProgramCounter(t, &cpu, 0x0208)
 	})
 	t.Run("CMP + BNE", func(t *testing.T) {
 		cpu := Cpu{}
@@ -1341,7 +1342,7 @@ func TestCompareAndBranch(t *testing.T) {
 		cpu.Execute([]uint8{LDA, 0x05, CMP, 0x06, BNE, 0x01, INX, BRK})
 		AssertRegisterX(t, &cpu, 0x00)
 
-		AssertProgramCounter(t, &cpu, 0x8008)
+		AssertProgramCounter(t, &cpu, 0x0208)
 	})
 	t.Run("CMP + BNE - No Branch", func(t *testing.T) {
 		cpu := Cpu{}
@@ -1349,7 +1350,7 @@ func TestCompareAndBranch(t *testing.T) {
 		cpu.Execute([]uint8{LDA, 0x05, CMP, 0x05, BNE, 0x01, INX, BRK})
 		AssertRegisterX(t, &cpu, 0x01)
 
-		AssertProgramCounter(t, &cpu, 0x8008)
+		AssertProgramCounter(t, &cpu, 0x0208)
 	})
 
 	t.Run("BPL loop", func(t *testing.T) {
@@ -1359,7 +1360,7 @@ func TestCompareAndBranch(t *testing.T) {
 		cpu.Execute([]uint8{LDX, 0x05, DEX, BPL, 0xfd, BRK})
 		AssertRegisterX(t, &cpu, 0xff)
 
-		AssertProgramCounter(t, &cpu, 0x8006)
+		AssertProgramCounter(t, &cpu, 0x0206)
 	})
 
 	t.Run("BMI loop", func(t *testing.T) {
@@ -1369,7 +1370,7 @@ func TestCompareAndBranch(t *testing.T) {
 		cpu.Execute([]uint8{LDX, 0xfd, INX, BMI, 0xfd, BRK})
 		AssertRegisterX(t, &cpu, 0x00)
 
-		AssertProgramCounter(t, &cpu, 0x8006)
+		AssertProgramCounter(t, &cpu, 0x0206)
 	})
 }
 
@@ -1379,31 +1380,31 @@ func TestFiveInstructions(t *testing.T) {
 
 	AssertRegisterA(t, &cpu, 0xc0)
 	AssertRegisterX(t, &cpu, 0xc1)
-	AssertProgramCounter(t, &cpu, 0x8005)
+	AssertProgramCounter(t, &cpu, 0x0205)
 }
 
 func TestLoad(t *testing.T) {
 	t.Run("Load Program", func(t *testing.T) {
 		cpu := Cpu{}
 		programBytes := []uint8{0x01, 0x02, 0x03}
-		var startingAddress uint16 = 0x8000
+		var startingAddress uint16 = 0x0200
 		cpu.LoadAtAddress(programBytes, startingAddress)
 
 		for i := 0; i < 3; i++ {
 			memAddress := startingAddress + uint16(i)
-			if cpu.memory[memAddress] != uint8(i+1) {
-				t.Errorf("Expected memory[%#x] to be %#x but was %#x", memAddress, i, cpu.memory[memAddress])
+			if cpu.bus.cpuVRam[memAddress] != uint8(i+1) {
+				t.Errorf("Expected memory[%#x] to be %#x but was %#x", memAddress, i, cpu.bus.cpuVRam[memAddress])
 			}
 		}
 	})
 	t.Run("Sets Program Reference in Memory", func(t *testing.T) {
 		cpu := Cpu{}
 		programBytes := []uint8{0x01, 0x02, 0x03}
-		cpu.LoadAtAddress(programBytes, 0x08000)
+		cpu.LoadAtAddress(programBytes, 0x0200)
 
-		value := cpu.readMemory_u16(0xfffc)
-		if value != 0x8000 {
-			t.Errorf("Expected memory[0xfffc] to be %#x but was %#x", 0x8000, value)
+		value := cpu.bus.ReadMemory_u16(0xfffc)
+		if value != 0x0200 {
+			t.Errorf("Expected memory[0xfffc] to be %#x but was %#x", 0x0200, value)
 		}
 	})
 }
@@ -1413,8 +1414,7 @@ func TestReset(t *testing.T) {
 	cpu.Status.Zero = true
 	cpu.RegA = 0x11
 	cpu.RegX = 0x22
-	cpu.memory[0xfffc] = 0x34
-	cpu.memory[0xfffd] = 0x12
+	cpu.bus.startingPC = 0x1234
 
 	cpu.reset()
 
@@ -1423,64 +1423,6 @@ func TestReset(t *testing.T) {
 	AssertRegisterA(t, &cpu, 0)
 	AssertProgramCounter(t, &cpu, 0x1234)
 	AssertStackPointer(t, &cpu, 0xff)
-}
-
-func TestReadMemory(t *testing.T) {
-	cpu := Cpu{}
-	memBytes := []uint8{0x01, 0x02, 0x03}
-	for i := 0; i < 3; i++ {
-		cpu.memory[i] = memBytes[i]
-	}
-
-	for i := 0; i < 3; i++ {
-		byte := cpu.readMemory(uint16(i))
-		if byte != uint8(i+1) {
-			t.Errorf("wanted %#x but got %#x", i+1, byte)
-		}
-	}
-}
-
-func TestWriteMemory(t *testing.T) {
-	cpu := Cpu{}
-	memBytes := []uint8{0x01, 0x02, 0x03}
-	for i := 0; i < 3; i++ {
-		cpu.writeMemory(uint16(i), memBytes[i])
-	}
-
-	for i := 0; i < 3; i++ {
-		byte := cpu.memory[i]
-		if byte != uint8(i+1) {
-			t.Errorf("wanted %#x but got %#x", i+1, byte)
-		}
-	}
-}
-
-func TestReadMemory_u16(t *testing.T) {
-	cpu := Cpu{}
-	cpu.memory[0x1000] = 0x11
-	cpu.memory[0x1001] = 0x22
-
-	value := cpu.readMemory_u16(0x1000)
-
-	if value != 0x2211 {
-		t.Errorf("wanted %#x but got %#x", 0x2211, value)
-	}
-}
-
-func TestWriteMemory_u16(t *testing.T) {
-	cpu := Cpu{}
-	cpu.writeMemory_u16(0x1000, 0x1122)
-
-	firstByte := cpu.memory[0x1000]
-	secondByte := cpu.memory[0x1000+1]
-
-	if firstByte != 0x22 {
-		t.Errorf("wanted %#x but got %#x", 0x22, firstByte)
-	}
-
-	if secondByte != 0x11 {
-		t.Errorf("wanted %#x but got %#x", 0x11, secondByte)
-	}
 }
 
 func TestImmediateMode(t *testing.T) {
@@ -1496,7 +1438,7 @@ func TestImmediateMode(t *testing.T) {
 func TestZeroMode(t *testing.T) {
 	cpu := Cpu{}
 	cpu.ProgramCounter = 0x01
-	cpu.memory[0x02] = 0x05
+	cpu.bus.cpuVRam[0x02] = 0x05
 	value := cpu.ZeroMode()
 
 	if value != 0x05 {
@@ -1508,7 +1450,7 @@ func TestZeroXMode(t *testing.T) {
 	cpu := Cpu{}
 	cpu.ProgramCounter = 0x01
 	cpu.RegX = 0x01
-	cpu.memory[0x02] = 0x05
+	cpu.bus.cpuVRam[0x02] = 0x05
 	value := cpu.ZeroXMode()
 
 	if value != 0x06 {
@@ -1519,8 +1461,8 @@ func TestZeroXMode(t *testing.T) {
 func TestAbsoluteMode(t *testing.T) {
 	cpu := Cpu{}
 	cpu.ProgramCounter = 0x01
-	cpu.memory[0x02] = 0x34
-	cpu.memory[0x03] = 0x12
+	cpu.bus.cpuVRam[0x02] = 0x34
+	cpu.bus.cpuVRam[0x03] = 0x12
 	value := cpu.AbsoluteMode()
 
 	if value != 0x1234 {
@@ -1532,8 +1474,8 @@ func TestAbsoluteXMode(t *testing.T) {
 	cpu := Cpu{}
 	cpu.ProgramCounter = 0x01
 	cpu.RegX = 0x01
-	cpu.memory[0x02] = 0x34
-	cpu.memory[0x03] = 0x12
+	cpu.bus.cpuVRam[0x02] = 0x34
+	cpu.bus.cpuVRam[0x03] = 0x12
 	value := cpu.AbsoluteXMode()
 
 	if value != 0x1235 {
@@ -1545,8 +1487,8 @@ func TestAbsoluteYMode(t *testing.T) {
 	cpu := Cpu{}
 	cpu.ProgramCounter = 0x01
 	cpu.RegY = 0x01
-	cpu.memory[0x02] = 0x34
-	cpu.memory[0x03] = 0x12
+	cpu.bus.cpuVRam[0x02] = 0x34
+	cpu.bus.cpuVRam[0x03] = 0x12
 	value := cpu.AbsoluteYMode()
 
 	if value != 0x1235 {
@@ -1556,11 +1498,11 @@ func TestAbsoluteYMode(t *testing.T) {
 func TestIndirectMode(t *testing.T) {
 	cpu := Cpu{}
 	cpu.ProgramCounter = 0x01
-	cpu.memory[0x02] = 0xf0
-	cpu.memory[0x03] = 0x00
+	cpu.bus.cpuVRam[0x02] = 0xf0
+	cpu.bus.cpuVRam[0x03] = 0x00
 
-	cpu.memory[0xf0] = 0x01
-	cpu.memory[0xf1] = 0xcc
+	cpu.bus.cpuVRam[0xf0] = 0x01
+	cpu.bus.cpuVRam[0xf1] = 0xcc
 	value := cpu.IndirectMode()
 
 	if value != 0xcc01 {
@@ -1572,8 +1514,8 @@ func TestIndirectXMode(t *testing.T) {
 	cpu := Cpu{}
 	cpu.ProgramCounter = 0x01
 	cpu.RegX = 0x01
-	cpu.memory[0x02] = 0x34
-	cpu.memory[0x35] = 0xab
+	cpu.bus.cpuVRam[0x02] = 0x34
+	cpu.bus.cpuVRam[0x35] = 0xab
 	value := cpu.IndirectXMode()
 
 	if value != 0xab {
@@ -1585,8 +1527,8 @@ func TestIndirectYMode(t *testing.T) {
 	cpu := Cpu{}
 	cpu.ProgramCounter = 0x01
 	cpu.RegY = 0x01
-	cpu.memory[0x02] = 0x34
-	cpu.memory[0x35] = 0xab
+	cpu.bus.cpuVRam[0x02] = 0x34
+	cpu.bus.cpuVRam[0x35] = 0xab
 	value := cpu.IndirectYMode()
 
 	if value != 0xab {
@@ -1598,7 +1540,7 @@ func TestRelativeMode(t *testing.T) {
 	t.Run("Relative Mode - positive offset", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.ProgramCounter = 0x01
-		cpu.memory[0x02] = 0x34
+		cpu.bus.cpuVRam[0x02] = 0x34
 		value := cpu.RelativeMode()
 
 		if value != 0x37 {
@@ -1608,7 +1550,7 @@ func TestRelativeMode(t *testing.T) {
 	t.Run("Relative Mode - negative offset", func(t *testing.T) {
 		cpu := Cpu{}
 		cpu.ProgramCounter = 0x05
-		cpu.memory[0x06] = 0xfd
+		cpu.bus.cpuVRam[0x06] = 0xfd
 		value := cpu.RelativeMode()
 
 		// 5 + 2 - 3 = 4
@@ -1671,8 +1613,8 @@ func AssertProgramCounter(t *testing.T, cpu *Cpu, value uint16) {
 }
 
 func AssertMemoryValue(t *testing.T, cpu *Cpu, address uint16, value uint8) {
-	if cpu.memory[address] != value {
-		t.Errorf("Expected memory value at %#x to be %#x but was %#x", address, value, cpu.memory[address])
+	if cpu.bus.cpuVRam[address] != value {
+		t.Errorf("Expected memory value at %#x to be %#x but was %#x", address, value, cpu.bus.cpuVRam[address])
 	}
 }
 
